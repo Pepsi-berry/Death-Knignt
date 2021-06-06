@@ -10,10 +10,9 @@ public:
 	virtual void attack();
 	virtual void update(float delta);
 	virtual bool init();
+	virtual void getdamage(int damage) { _hp -= damage; }
 	std::map<cocos2d::EventKeyboard::KeyCode, bool> keyMap;
-	virtual void getdamage(int damage) {
-		_hp -= damage;
-	}
+	void bindscene(Scene* scene);
 	CREATE_FUNC(hero);
 protected:
 	float _hero_speed;

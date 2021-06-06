@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 #include <map>
-
+#include "bullet.h"
+#include "weapon.h"
+#include "RangedWeapon.h"
 
 #endif

@@ -4,36 +4,28 @@ inline bool weapon::initWeaponMember(
 	int MPconsume, float attackSpeed, float critRate, float critMultiple)           //串联结构逐个初始化各成员,保证全部成功时返回true
 {
 	auto MPconsumeTemp = std::make_shared<int>(MPconsume);
-	if (!MPconsumeTemp) {
+	if (!MPconsumeTemp) 
 		return false;
-	}
-	else {
+	else 
 		_MPconsume = MPconsumeTemp;
-	}
 
 	auto attackSpeedTemp = std::make_shared<float>(attackSpeed);
-	if (!MPconsumeTemp) {
+	if (!MPconsumeTemp)
 		return false;
-	}
-	else {
+	else 
 		_attackSpeed = attackSpeedTemp;
-	}
 
 	auto critRateTemp = std::make_shared<float>(critRate);
-	if (!critRateTemp) {
+	if (!critRateTemp) 
 		return false;
-	}
-	else {
+	else 
 		_critRate = critRateTemp;
-	}
 
 	auto critMultipleTemp = std::make_shared<float>(critMultiple);
-	if (!critMultipleTemp) {
+	if (!critMultipleTemp) 
 		return false;
-	}
-	else {
+	else 
 		_critMultiple = critMultipleTemp;
-	}
 
 	return true;
 }

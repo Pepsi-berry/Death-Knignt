@@ -1,24 +1,38 @@
 #include <RangedWeapon.h>
 //
-std::shared_ptr<rangedWeapon> rangedWeapon::createRangedWeapon(int MPconsume, float attackSpeed, float critRate, float critMultiple, std::shared_ptr<bullet> Bullet)
+std::shared_ptr<rangedWeapon> rangedWeapon::createRangedWeapon(const std::string& spriteFrameName, std::shared_ptr<bullet> Bullet, int MPconsume, float attackSpeed,
+	float critRate, float critMultiple,float CDTime)
 {
 	auto temp = std::make_shared<rangedWeapon>();
-	if (temp && temp->initRangedWeapon(MPconsume, attackSpeed, critRate, critMultiple, Bullet))
+	if (temp && temp->initRangedWeapon(spriteFrameName, Bullet, MPconsume, attackSpeed, critRate, critMultiple, CDTime))
 		return temp;
-	else 
+	else
 		return std::shared_ptr<rangedWeapon>(nullptr);
 }
 //
-bool rangedWeapon::initRangedWeapon(int MPconsume, float attackSpeed, float critRate, float critMultiple, std::shared_ptr<bullet> Bullet)
+bool rangedWeapon::initRangedWeapon(const std::string& spriteFrameName, std::shared_ptr<bullet> Bullet, int MPconsume, float attackSpeed,
+	float critRate, float critMultiple, float CDTime)
 {
-	return (initWeapon(MPconsume, attackSpeed, critRate, critMultiple) && initRangedWeaponMem(Bullet));
+	auto spriteTemp = Sprite::create(spriteFrameName);
+	auto frameTemp = spriteTemp->getSpriteFrame();
+	//return (initWeapon(MPconsume, attackSpeed, critRate, critMultiple) && initRangedWeaponMem(Bullet, CDTime) &&
+	//	(this->initWithSpriteFrame(frameTemp)));
+	return (Sprite::initWithSpriteFrameName(spriteFrameName)&&initWeapon(MPconsume, attackSpeed, critRate, critMultiple) &&
+		initRangedWeaponMem(Bullet, CDTime));
+	//return (initWeapon(MPconsume, attackSpeed, critRate, critMultiple) && initRangedWeaponMem(Bullet, CDTime) &&
+	//	(this->initWithSpriteFrameName(spriteFrameName)));
 }
 //
-bool rangedWeapon::initRangedWeaponMem(std::shared_ptr<bullet> Bullet)
+inline bool rangedWeapon::initRangedWeaponMem(std::shared_ptr<bullet> Bullet, float CDTime)
 {
 	if (!Bullet)
 		return false;
 	_bullet = Bullet;
+
+	auto CDTimeTemp = std::make_shared<float>(CDTime);
+	if (!CDTimeTemp)
+		return false;
+	_CDTime = CDTimeTemp;
 	return true;
 }
 //

@@ -27,21 +27,24 @@ public:
 	virtual bool getCritOrNot()const { return _isCrit; }
 	virtual float getUsedOrNot()const { return _isUsed; }
 
-	bool initBullet(float damage, float speed, bool crit);
-
 	bullet* clone(bool crit)const;
 
 	virtual ~bullet() = default;
 
 	//根据接受的参数创建一个子弹对象并完成初始化
-	static std::shared_ptr<bullet> createBullet(float damage = 0, float movingSpeed = 0.0f, bool isCrit = false);
+	static std::shared_ptr<bullet> createBullet(const std::string& spriteFrameName, float damage = 0, float movingSpeed = 0.0f,
+		bool isCrit = false, bool isUsed = false);
+
+	bool initBullet(const std::string& spriteFrameName, float damage, float speed, bool isCrit, bool isUsed);
+
+	CREATE_FUNC(bullet);
 protected:
 	std::shared_ptr<float> _movingSpeed;                                  //移速
 	std::shared_ptr<float> _damage;                                       //攻击伤害
 	bool _isCrit;                                                         //是否暴击
 	bool _isUsed;                                                         //是否闲置,以进行管理
 private:
-	bool initMemBullet(float damage, float movingSpeed, bool isCrit);
+	bool initBulletMem(float damage, float movingSpeed, bool isCrit, bool isUsed);
 };
 
 

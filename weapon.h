@@ -13,12 +13,12 @@ class weapon :public cocos2d::Sprite {
 public:
 	//设置各参数
 	virtual void setMPCosume(int mpConsume) { *_MPconsume = mpConsume; }
-	virtual void setAspd(float attackSpeed) { *_attackSpeed = attackSpeed; }
+	virtual void setAttackSpeed(float attackSpeed) { *_attackSpeed = attackSpeed; }
 	virtual void setCritRate(float critRate) { *_critRate = critRate; }
 	virtual void setCritMultiple(float critMultiple) { *_critMultiple = critMultiple; }
 	//得到各参数现在值
 	virtual int getMPCosume()const { return *_MPconsume; }
-	virtual float getAspd()const { return *_attackSpeed; }
+	virtual float getAttackSpeed()const { return *_attackSpeed; }
 	virtual float getCritRate()const { return *_critRate; }
 	virtual float getCritMultiple()const { return *_critMultiple; }
 

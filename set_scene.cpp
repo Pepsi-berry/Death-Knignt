@@ -1,6 +1,7 @@
 #include "HelloWorldScene.h"
 #include "cocos2d.h"
 #include"set_scene.h"
+#include "globalVariable.h"
 
 USING_NS_CC;
 
@@ -35,7 +36,7 @@ bool set_scene::init()
 
     // set Background with grey colour
     auto background = DrawNode::create();
-    background->drawSolidRect(origin, winSize, cocos2d::Color4F(0.6, 0.6, 0.6, 1.0));
+    background->drawSolidRect(origin, winSize, cocos2d::Color4F(0.6f, 0.6f, 0.6f, 1.0f));
     this->addChild(background);
 
     m_tileMap = TMXTiledMap::create("pic.tmx");
@@ -43,15 +44,23 @@ bool set_scene::init()
     this->addChild(m_tileMap);
 
     me = Sprite::create("Knight1.png");
-    me->setScale(0.1);
-    me->setPosition(winSize.width * 0.5, winSize.height * 0.5);
+    me->setScale(0.1f);
+    me->setPosition(winSize.width * 0.5f, winSize.height * 0.5f);
     this->addChild(me,5);
-
-    auto weaponForTest = Sprite::create("SubmachineGun.png");
-    weaponForTest->setScale(0.2);
+    /********************************************************************/
+    //auto bulletForTest = bullet::createBullet("bullet_1.png");
+    //auto weaponForTest = rangedWeapon::createRangedWeapon("SubmachineGun.png", bulletForTest);
+    //weaponForTest->setScale(0.2);
+    //weaponForTest->setPosition(me->getPosition());
+    //m_tileMap->addChild(weaponForTest.get(), 6);
+    //m_tileMap->addChild(bulletForTest.get(), 6);
+    auto SpriteCache = SpriteFrameCache::getInstance();
+    SpriteCache->addSpriteFramesWithFile("BigKnife.plist");
+    auto weaponForTest = bullet::createBullet("BigKnife0.png");
+    weaponForTest->setScale(0.2f);
     weaponForTest->setPosition(me->getPosition());
-    this->addChild(weaponForTest, 6);
-
+    this->addChild(weaponForTest.get(),6);
+    /********************************************************************/
 
     //创建监听器分别监听键盘和鼠标事件
     auto listener1 = EventListenerKeyboard::create();
@@ -132,24 +141,24 @@ void set_scene::update(float delta)
 
     if (keyMap[right])
     {
-        auto moveby = MoveBy::create(0.01, Vec2(7,0));
+        auto moveby = MoveBy::create(0.01f, Vec2(7,0));
         me->runAction(moveby);
     }
 
     if (keyMap[left])
     {
-        auto moveby = MoveBy::create(0.01, Vec2(-7,0));
+        auto moveby = MoveBy::create(0.01f, Vec2(-7,0));
         me->runAction(moveby);
     }
     if (keyMap[up])
     {
-        auto moveby = MoveBy::create(0.01, Vec2(0,7));
+        auto moveby = MoveBy::create(0.01f, Vec2(0,7));
         me->runAction(moveby);
     }
 
     if (keyMap[down])
     {
-        auto moveby = MoveBy::create(0.01, Vec2(0,-7));
+        auto moveby = MoveBy::create(0.01f, Vec2(0,-7));
         me->runAction(moveby);
     }
 }

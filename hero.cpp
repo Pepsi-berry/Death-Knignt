@@ -28,32 +28,29 @@ void hero::attack() {
 
 void hero::update(float delta)
 {
-    move();
-    auto right = (EventKeyboard::KeyCode)127;
-    auto left = (EventKeyboard::KeyCode)124;
-    auto up = (EventKeyboard::KeyCode)146;
-    auto down = (EventKeyboard::KeyCode)142;
+        auto right = (EventKeyboard::KeyCode)127;
+        auto left = (EventKeyboard::KeyCode)124;
+        auto up = (EventKeyboard::KeyCode)146;
+        auto down = (EventKeyboard::KeyCode)142;
+        if (keyMap[right])
+        {
+            setPosition(this->getPositionX() + 10, this->getPositionY());
+        }
 
-    if (keyMap[right])
-    {
-        auto moveby = MoveBy::create(0.01, Vec2(10, 0));
-        _player->runAction(moveby);
-    }
+        if (keyMap[left])
+        {
+            setPosition(this->getPositionX() - 10, this->getPositionY());
 
-    if (keyMap[left])
-    {
-        auto moveby = MoveBy::create(0.01, Vec2(-10, 0));
-        _player->runAction(moveby);
-    }
-    if (keyMap[up])
-    {
-        auto moveby = MoveBy::create(0.01, Vec2(0, 10));
-        _player->runAction(moveby);
-    }
+        }
+        if (keyMap[up])
+        {
+            setPosition(this->getPositionX(), this->getPositionY() + 10);
 
-    if (keyMap[down])
-    {
-        auto moveby = MoveBy::create(0.01, Vec2(0, -10));
-        _player->runAction(moveby);
-    }
+        }
+
+        if (keyMap[down])
+        {
+            setPosition(this->getPositionX(), this->getPositionY() - 10);
+
+        }
 }
