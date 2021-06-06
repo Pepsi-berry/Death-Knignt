@@ -9,7 +9,7 @@
 
 USING_NS_CC;
 
-class weapon :public cocos2d::Sprite {
+class weapon :public cocos2d::Node {
 public:
 	//设置各参数
 	virtual void setMPCosume(int mpConsume) { *_MPconsume = mpConsume; }

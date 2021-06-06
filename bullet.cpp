@@ -20,12 +20,9 @@ inline bool bullet::initBulletMem(float damage, float movingSpeed, bool isCrit, 
 //
 bool bullet::initBullet(const std::string& spriteFrameName, float damage, float speed, bool isCrit, bool isUsed)
 {
-
-	//auto spriteTemp = Sprite::create(spriteFrameName);
-	//auto frameTemp = spriteTemp->getSpriteFrame();
-	//return (Sprite::init() && initBulletMem(damage, speed, isCrit, isUsed) && (this->initWithSpriteFrame(frameTemp)));
-	//return (Sprite::init() && initBulletMem(damage, speed, isCrit,isUsed) && (Sprite::initWithSpriteFrameName(spriteFrameName)));
-	return ((Sprite::initWithSpriteFrameName(spriteFrameName)) && initBulletMem(damage, speed, isCrit, isUsed));
+	/***************************************************改动行***************************************************/
+	return ((_spriteInBullet = Sprite::create(spriteFrameName)) && initBulletMem(damage, speed, isCrit, isUsed));
+	/***************************************************改动行***************************************************/
 }
 //
 bullet* bullet::clone(bool isCrit)const {                                           //实现快速复制子弹
@@ -33,7 +30,9 @@ bullet* bullet::clone(bool isCrit)const {                                       
 
 	if (temp)
 	{
-		temp->setSpriteFrame(this->getSpriteFrame());
+		/***************************************************改动行***************************************************/
+		temp->_spriteInBullet->setSpriteFrame(this->_spriteInBullet->getSpriteFrame());
+		/***************************************************改动行***************************************************/
 		temp->_damage = _damage;
 		temp->_movingSpeed = _movingSpeed;
 		temp->_isCrit =isCrit;

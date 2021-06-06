@@ -44,7 +44,7 @@ meleeWeapon* meleeWeapon::clone()const
 	meleeWeapon* temp = new(std::nothrow) meleeWeapon();
 
 	if (temp) {
-		temp->setSpriteFrame(this->getSpriteFrame());
+		temp->spriteInMeleeWeapon->setSpriteFrame(this->spriteInMeleeWeapon->getSpriteFrame());
 		temp->_MPconsume = _MPconsume;
 		temp->_attackSpeed = _attackSpeed;
 		temp->_critRate = _critRate;

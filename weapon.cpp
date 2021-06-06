@@ -32,5 +32,5 @@ inline bool weapon::initWeaponMember(
 
 bool weapon::initWeapon(int MPconsume, float attackSpeed, float critRate, float critMultiple)
 {
-	return (Sprite::init() && initWeaponMember(MPconsume, attackSpeed, critRate, critMultiple));
+	return (Node::init() && initWeaponMember(MPconsume, attackSpeed, critRate, critMultiple));
 }

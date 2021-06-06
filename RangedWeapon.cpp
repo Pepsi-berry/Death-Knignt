@@ -13,14 +13,8 @@ std::shared_ptr<rangedWeapon> rangedWeapon::createRangedWeapon(const std::string
 bool rangedWeapon::initRangedWeapon(const std::string& spriteFrameName, std::shared_ptr<bullet> Bullet, int MPconsume, float attackSpeed,
 	float critRate, float critMultiple, float CDTime)
 {
-	auto spriteTemp = Sprite::create(spriteFrameName);
-	auto frameTemp = spriteTemp->getSpriteFrame();
-	//return (initWeapon(MPconsume, attackSpeed, critRate, critMultiple) && initRangedWeaponMem(Bullet, CDTime) &&
-	//	(this->initWithSpriteFrame(frameTemp)));
-	return (Sprite::initWithSpriteFrameName(spriteFrameName)&&initWeapon(MPconsume, attackSpeed, critRate, critMultiple) &&
+	return ((_spriteInRangedWeapon = Sprite::create(spriteFrameName)) && initWeapon(MPconsume, attackSpeed, critRate, critMultiple) &&
 		initRangedWeaponMem(Bullet, CDTime));
-	//return (initWeapon(MPconsume, attackSpeed, critRate, critMultiple) && initRangedWeaponMem(Bullet, CDTime) &&
-	//	(this->initWithSpriteFrameName(spriteFrameName)));
 }
 //
 inline bool rangedWeapon::initRangedWeaponMem(std::shared_ptr<bullet> Bullet, float CDTime)
@@ -41,7 +35,7 @@ rangedWeapon* rangedWeapon::clone()const
 	rangedWeapon* temp = new(std::nothrow) rangedWeapon();
 
 	if (temp) {
-		temp->setSpriteFrame(this->getSpriteFrame());
+		temp->_spriteInRangedWeapon->setSpriteFrame(this->_spriteInRangedWeapon->getSpriteFrame());
 		temp->_MPconsume = _MPconsume;
 		temp->_attackSpeed = _attackSpeed;
 		temp->_critRate = _critRate;

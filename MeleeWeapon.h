@@ -25,6 +25,7 @@ protected:
 	std::shared_ptr<int> _damage;
 	std::shared_ptr<float> _meleeRange;
 	std::shared_ptr<float> _CDTime;
+	Sprite* spriteInMeleeWeapon;
 
 private:
 	bool initMeleeWeaponMem(float CDTime, float meleeRange, int damage);

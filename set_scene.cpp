@@ -48,18 +48,28 @@ bool set_scene::init()
     me->setPosition(winSize.width * 0.5f, winSize.height * 0.5f);
     this->addChild(me,5);
     /********************************************************************/
-    //auto bulletForTest = bullet::createBullet("bullet_1.png");
-    //auto weaponForTest = rangedWeapon::createRangedWeapon("SubmachineGun.png", bulletForTest);
-    //weaponForTest->setScale(0.2);
+    auto bulletForTest = bullet::createBullet("bullet_1.png");
+    auto weaponForTest = rangedWeapon::createRangedWeapon("SubmachineGun.png", bulletForTest);
+    weaponForTest->getSpriteInRangedWeapon()->setScale(0.2);
+    weaponForTest->getSpriteInRangedWeapon()->setPosition(me->getPosition());
+    //m_tileMap->addChild(weaponForTest->getSpriteInRangedWeapon(), 6);
+    //
+    auto moveby = MoveBy::create(0.01f, Vec2(200, 0));
+    me->runAction(moveby);
+    //
+    auto weaponForTest2 = rangedWeapon::createRangedWeapon("SubmachineGun2.png", bulletForTest);
+    weaponForTest2->getSpriteInRangedWeapon()->setScale(0.2);
+    weaponForTest2->getSpriteInRangedWeapon()->setPosition(me->getPosition());
+    weaponForTest = weaponForTest2;
+    m_tileMap->addChild(weaponForTest->getSpriteInRangedWeapon(), 6);
+    //bulletForTest->getSpriteInBullet()->setPosition(me->getPosition());
+    //m_tileMap->addChild(bulletForTest->getSpriteInBullet(), 6);
+    //auto SpriteCache = SpriteFrameCache::getInstance();
+    //SpriteCache->addSpriteFramesWithFile("BigKnife.plist");
+    //auto weaponForTest = bullet::createBullet("BigKnife0.png");
+    //weaponForTest->setScale(0.2f);
     //weaponForTest->setPosition(me->getPosition());
-    //m_tileMap->addChild(weaponForTest.get(), 6);
-    //m_tileMap->addChild(bulletForTest.get(), 6);
-    auto SpriteCache = SpriteFrameCache::getInstance();
-    SpriteCache->addSpriteFramesWithFile("BigKnife.plist");
-    auto weaponForTest = bullet::createBullet("BigKnife0.png");
-    weaponForTest->setScale(0.2f);
-    weaponForTest->setPosition(me->getPosition());
-    this->addChild(weaponForTest.get(),6);
+    //this->addChild(weaponForTest.get(),6);
     /********************************************************************/
 
     //创建监听器分别监听键盘和鼠标事件
