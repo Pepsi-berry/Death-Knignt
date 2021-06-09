@@ -1,6 +1,10 @@
 #include "cocos2d.h"
+#include "hero.h"
+#include "HelloWorldScene.h"
+#include "globalVariable.h"
 
 
+USING_NS_CC;
 
 class set_scene : public cocos2d::Scene
 {
@@ -19,7 +23,7 @@ public:
     // implement the "static create()" method manually
     CREATE_FUNC(set_scene);
 private:
-    cocos2d::Sprite* me;
+    hero* heroForTest;
     cocos2d::TMXTiledMap* m_tileMap;
     short direction;
     std::map<cocos2d::EventKeyboard::KeyCode, bool> keyMap;

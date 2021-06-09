@@ -1,16 +1,31 @@
 #include"character.h"
 
-USING_NS_CC;
-
 character::~character() {}
 
-Sprite* character::getSprite() { return this->sprite; }
+Sprite* character::getSprite() { return this->_spriteInCharacter; }
+
+bool character::initSpriteWithFileName(const std::string& fileName)
+{
+	return (_spriteInCharacter = Sprite::create(fileName));
+}
+
+bool character::initMember(int attack, int maxHP, float moveSpeed)
+{
+	if (attack <= 0 || maxHP <= 0 || moveSpeed <= 0)
+		return false;
+	_attack = attack;
+	_maxHP = maxHP;
+	_HP = maxHP;
+	_moveSpeed = moveSpeed;
+	return true;
+}
+
 
 void character::bindSprite(Sprite* sprite, int layer) {
-	this->sprite = sprite;
-	this->sprite->setGlobalZOrder(layer);
+	this->_spriteInCharacter = sprite;
+	this->_spriteInCharacter->setGlobalZOrder(layer);
 
-	Size size = this->sprite->getContentSize();
+	Size size = this->_spriteInCharacter->getContentSize();
 	this->setContentSize(size); 
 
 	this->setAnchorPoint(Point(0.5f, 0.5f)); 
@@ -34,10 +49,10 @@ void character::showDeathEffect() {
 
 void character::getdamage(int damage) { 
 	if (getSprite() == nullptr) return;
-	if (this->HP > damage)
-		this->HP -= damage;
+	if (this->_HP > damage)
+		this->_HP -= damage;
 	else
-		this->HP = 0;
+		this->_HP = 0;
 
 	/*受伤特效*/
 	/*FlowWord* flowWord = FlowWord::create();
@@ -47,16 +62,16 @@ void character::getdamage(int damage) {
 		Vec2(0, this->getContentSize().height / 2.2f));*/
 }
 
-int character::getHP() const { return this->HP; }
+int character::getHP() const { return this->_HP; }
 
-void character::setHP(int HP) { this->HP = std::min(HP, maxHP); }
+void character::setHP(int HP) { this->_HP = std::min(HP, _maxHP); }
 
-int character::getMaxHP() const { return this->maxHP; }
+int character::getMaxHP() const { return this->_maxHP; }
 
-void character::setMaxHP(int maxHP) { this->maxHP = maxHP; }
+void character::setMaxHP(int maxHP) { this->_maxHP = maxHP; }
 
-float character::getMoveSpeed() const { return moveSpeed; }
+float character::getMoveSpeed() const { return _moveSpeed; }
 
-void character::setMoveSpeed(float speed) { this->moveSpeed = speed; }
+void character::setMoveSpeed(float speed) { this->_moveSpeed = speed; }
 
-bool character::isdead() const { return HP<=0; }
+bool character::isdead() const { return _HP<=0; }

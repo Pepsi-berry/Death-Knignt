@@ -1,0 +1,39 @@
+#ifndef _ROOM_
+#define _ROOM_
+
+#include "cocos2d.h"
+#include "globalVariable.h"
+#include "hero.h"
+
+USING_NS_CC;
+//代表抽象的房间(包含走廊)
+class room : public Node
+{
+public:
+	CREATE_FUNC(room);
+
+	virtual bool init();
+
+	virtual void update(float delta);
+
+	//根据传入的坐标和层数载入相应贴图
+	void generateFloorMaping(float positionX, float positionY, int layer);
+	void generateWallMaping(float positionX,float positionY,int layer);
+
+	void createRoomMaping();               //调用函数添加子节点生成较完备房间贴图
+
+protected:
+	float _centerX, _centerY;               //代表房间中心点坐标
+	int _sizeX, _sizeY;                     //X,Y方向填充贴图(包含墙壁和地板)数量(代表房间大小)
+	//添加顶角坐标,以便于添加场景要素时进行直观的循环遍历
+	float _topLeftCornerPositionX, _topLeftCornerPositionY, _lowerRightCornerPositionX, _lowerRightCornerPositionY;
+	hero* Hero = NULL;                      //操控的游戏主角
+
+
+private:
+
+};
+
+
+
+#endif // !_ROOM_

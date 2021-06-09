@@ -11,30 +11,32 @@ public:
 
 	Sprite* getSprite();
 
-	void bindSprite(Sprite* sprite, int layer);
 
 	virtual void showDeathEffect();
+	virtual void getdamage(int damage);
 
+	void bindSprite(Sprite* sprite, int layer);
 	void setMaxHP(int maxhp);
 	int getMaxHP() const;
 	void setHP(int hp);
 	int getHP() const;
 	void setMoveSpeed(float movespeed);
 	float getMoveSpeed() const;
+	bool initSpriteWithFileName(const std::string& fileName);
+	bool initMember(int attack = 3, int maxHP = 10, float moveSpeed = 0.0f);
 
-	virtual void getdamage(int damage);
 
 	bool isdead() const;
 
 	~character();
 
 private:
-	Sprite* sprite;
+	Sprite* _spriteInCharacter;
 protected:
-	int attack = 3;
-	int HP = 10, maxHP = 10;
+	int _attack = 3;
+	int _HP = 10, _maxHP = 10;
 	//float attackSpeed = 0.0f;  
-	float moveSpeed = 0.0f;  
+	float _moveSpeed = 0.0f;  
 
 };
 
