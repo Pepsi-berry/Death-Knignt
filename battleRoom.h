@@ -3,8 +3,45 @@
 
 #include "room.h"
 
+USING_NS_CC;
+
 class battleRoom : public room 
 {
+	friend class battleScene;
+	static bool createBattleRoom(battleRoom*& toBattleRoom, battleRoom* curBattleRoom, int direction, int toX, int toY);
+public:
+	CREATE_FUNC(battleRoom);
+	virtual bool init();
+	virtual void update(float delta);
+
+
+	void createBattleRoomMaping();
+	void createBox(float positionX, float positionY);
+	void generateDoorMaping(float positionX, float positionY, int layer);
+
+	void setRowNum(int rowNum) { _rowNum = rowNum; }
+	void setcolumnNum(int columnNum) { _columnNum = columnNum; }
+
+	int getRowNum() { return _rowNum; }
+	int getColumnNum() { return _columnNum; }
+
+	Vector<weapon*>& getVecWeapon() { return _vecWeapon; }
+	Vector<Sprite*>& getVecBox() { return _vecBox; }
+
+//protected:
+//
+private:
+	int _battleRoomType;
+
+	int _rowNum, _columnNum;                    //在房间矩阵中的行列序号
+
+	bool _connectedDirection[4] = { false };    //储存房间某方向是否有与其相连的房间
+	bool _visDirection[4] = { false };          //储存房间某方向是否已存在房间
+	bool _visDirectionCpy[4] = { false };       
+
+	Vector<weapon*> _vecWeapon;                 //用于对生成的武器进行管理,主要在于切换武器
+	Vector<Sprite*> _vecBox;                    //用于对生成在地图中的箱子进行管理,主要在于开箱子
+
 
 };
 

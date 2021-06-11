@@ -11,14 +11,30 @@
 
 #define PI 3.14159f                         //暂时添加,用途未定
 
+//宏定义方向
+#define UP 0
+#define LEFT 1
+#define DOWN 2
+#define RIGHT 3
+//依次表示上左下右方向
+constexpr int DirectionX[4] = { 0, -1, 0, 1 };  
+constexpr int DirectionY[4] = { 1, 0, -1, 0 };  
+
 #define WIDTHOFWALL 40                      //代表墙壁贴图X向像素点数
 #define HEIGHTOFWALL 60                     //代表墙壁贴图Y向像素点数
 
 #define WIDTHOFFLOOR 40                     //代表地板贴图X向像素点数
 #define HEIGHTOFFLOOR 40                    //代表地板贴图Y向像素点数
 
-#define SIZEOFROOM 20                       //代表一个常规房间默认包含贴图数量(包含地板和贴图)
+#define SIZEOFROOM 20                       //代表一个常规战斗房间X,Y方向默认包含贴图数量(包含地板和贴图)
+#define SIZEOFCORRIDOR 7                    //代表走廊的默认宽度
 
+#define CENTERDISTANCE 41*40                //代表两房间的默认标准中心距
+#define SIZEOFCENTERDISTANCE 41               //代表两房间的中心距离的贴图数
+
+//定义X,Y方向房间生成的最大数目
+#define NumRoomX 5
+#define NumRoomY 5  
 //宏定义房间类型
 #define TypeNormal 0
 #define TypeBox 1                           //中心处生成道具
@@ -28,5 +44,14 @@
 //拓展功能,后续update版本添加
 //#define TypeStatue 5
 //#define TypeStore 6
+
+//宏定义关卡类型,击败Boss后切换关卡类型
+#define levelTypeGreen 1
+#define levelTypeIce 2
+#define levelTypeFire 3
+#define levelTypePoison 4
+
+#define LR 0                                //定义走廊朝向左右
+#define UD 1                                //定义走廊朝向上下
 
 #endif

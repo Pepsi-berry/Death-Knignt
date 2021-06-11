@@ -2,37 +2,20 @@
 
 character::~character() {}
 
-Sprite* character::getSprite() { return this->_spriteInCharacter; }
+Sprite* character::getSprite() { return base_sprite; }
 
-bool character::initSpriteWithFileName(const std::string& fileName)
-{
-	return (_spriteInCharacter = Sprite::create(fileName));
-}
+void character::bindSprite(Sprite* sprite) {
+	this->base_sprite = sprite;
+	//this->_spriteInCharacter->setGlobalZOrder(layer);
 
-bool character::initMember(int attack, int maxHP, float moveSpeed)
-{
-	if (attack <= 0 || maxHP <= 0 || moveSpeed <= 0)
-		return false;
-	_attack = attack;
-	_maxHP = maxHP;
-	_HP = maxHP;
-	_moveSpeed = moveSpeed;
-	return true;
-}
+	Size size = this->base_sprite->getContentSize();
+	this->setContentSize(size);
 
-
-void character::bindSprite(Sprite* sprite, int layer) {
-	this->_spriteInCharacter = sprite;
-	this->_spriteInCharacter->setGlobalZOrder(layer);
-
-	Size size = this->_spriteInCharacter->getContentSize();
-	this->setContentSize(size); 
-
-	this->setAnchorPoint(Point(0.5f, 0.5f)); 
+	this->setAnchorPoint(Point(0.5f, 0.5f));
 	setPosition(Point(.0f, .0f));
 
-	this->addChild(sprite);
-	sprite->setPosition(Point(size.width / 2, size.height / 2));
+	this->addChild(base_sprite);
+	this->base_sprite->setPosition(Point(size.width / 2, size.height / 2));
 }
 
 void character::showDeathEffect() {
@@ -47,19 +30,12 @@ void character::showDeathEffect() {
 	this->getSprite()->runAction(sequence);
 }
 
-void character::getdamage(int damage) { 
+void character::getdamage(int damage) {
 	if (getSprite() == nullptr) return;
 	if (this->_HP > damage)
 		this->_HP -= damage;
 	else
 		this->_HP = 0;
-
-	/*受伤特效*/
-	/*FlowWord* flowWord = FlowWord::create();
-	this->addChild(flowWord);
-	flowWord->showWord(-delta,
-		getSprite()->getPosition() +
-		Vec2(0, this->getContentSize().height / 2.2f));*/
 }
 
 int character::getHP() const { return this->_HP; }
@@ -74,4 +50,4 @@ float character::getMoveSpeed() const { return _moveSpeed; }
 
 void character::setMoveSpeed(float speed) { this->_moveSpeed = speed; }
 
-bool character::isdead() const { return _HP<=0; }
+bool character::isdead() const { return _HP <= 0; }

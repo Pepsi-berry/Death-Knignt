@@ -9,6 +9,7 @@ USING_NS_CC;
 //代表抽象的房间(包含走廊)
 class room : public Node
 {
+	friend class battleScene;
 public:
 	CREATE_FUNC(room);
 
@@ -19,6 +20,11 @@ public:
 	//根据传入的坐标和层数载入相应贴图
 	void generateFloorMaping(float positionX, float positionY, int layer);
 	void generateWallMaping(float positionX,float positionY,int layer);
+
+	void setCenter(float centerX, float centerY) { _centerX = centerX, _centerY = centerY; }
+
+	float getCenterX() { return _centerX; }
+	float getCenterY() { return _centerY; }
 
 	void createRoomMaping();               //调用函数添加子节点生成较完备房间贴图
 
@@ -31,7 +37,7 @@ protected:
 
 
 private:
-
+	bool _direction;                        //代表走廊朝向
 };
 
 
