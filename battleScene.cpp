@@ -94,14 +94,14 @@ void battleScene::beginRoomGenerate(int column, int row)
 
 	std::queue<battleRoom*> roomQueue;
 
-	battleRoom*& Room = _battleRoomMatrix[column][row]; // the pointer will be changed
+	battleRoom*& Room = _battleRoomMatrix[column][row]; // the pointer will be changable
 	Room = battleRoom::create();
 	this->_beginRoom = Room;
 
 	Room->setcolumnNum(column);
 	Room->setRowNum(row);
-	//log("curRoom %d %d", curRoom->x, curRoom->y);
-	//log("beginRoom %d %d", beginRoom->x, beginRoom->y);
+	log("curRoom %d %d", Room->getColumnNum(), Room->getRowNum());
+	log("beginRoom %d %d", _beginRoom->getColumnNum(), _beginRoom->getRowNum());
 	Room->setCenter(visibleSize.width / 2, visibleSize.height / 2);
 	this->addChild(Room, 0);
 
@@ -186,9 +186,9 @@ void battleScene::initBattleRoomGenerate()
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 	countForRoom = 0;
 
-	for (INT32 y = 0; y < NumRoomY; y++)
+	for (int y = 0; y < NumRoomY; y++)
 	{ // 25 rooms
-		for (INT32 x = 0; x < NumRoomX; x++)
+		for (int x = 0; x < NumRoomX; x++)
 		{
 			_battleRoomMatrix[x][y] = nullptr;
 		}
@@ -196,7 +196,7 @@ void battleScene::initBattleRoomGenerate()
 
 	srand(static_cast<unsigned int>(time(nullptr)));
 
-	beginRoomGenerate((NumRoomX + 1) / 2, (NumRoomY + 1) / 2);            //在矩阵中心生成初始房间
+	beginRoomGenerate((NumRoomX) / 2, (NumRoomY) / 2);            //在矩阵中心生成初始房间
 
 	setRoomType();
 
@@ -209,6 +209,7 @@ void battleScene::initBattleRoomGenerate()
 
 			curRoom->Hero = Hero;
 			curRoom->createBattleRoomMaping();
+			memcpy(curRoom->_visDirectionCpy, curRoom->_visDirection, sizeof(curRoom->_visDirection));
 		}
 	}
 

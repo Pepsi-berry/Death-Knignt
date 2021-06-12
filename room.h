@@ -37,7 +37,7 @@ protected:
 
 
 private:
-	bool _direction;                        //代表走廊朝向
+	int _direction;                         //代表走廊朝向
 };
 
 

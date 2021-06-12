@@ -95,17 +95,17 @@ void battleRoom::createBattleRoomMaping()
 		{
 			if (y == 0 || y == _sizeY - 1 || x == 0 || x == _sizeX - 1) 
 			{
-				if (((x == 0) && _visDirection[LEFT] && (_sizeY / 2 - 2 <= y) &&
+				if (((x == 0) && _visDirection[LEFT] && ((_sizeY / 2) - 2 <= y) &&
 					(y <= _sizeY / 2 - 2 + SIZEOFCORRIDOR - 3)) ||
 
 					((x == _sizeX - 1) && _visDirection[RIGHT] &&
 						(_sizeY / 2 - 2 <= y) &&
 						(y <= _sizeY / 2 - 2 + SIZEOFCORRIDOR - 3)) ||
 
-					((y == 0) && _visDirection[DOWN] && (_sizeX / 2 - 2 <= x) &&
+					((y == 0) && _visDirection[DOWN] && ((_sizeX / 2) - 2 <= x) &&
 						(x <= _sizeX / 2 - 2 + SIZEOFCORRIDOR - 3)) ||
 
-					((y == _sizeY - 1) && _visDirection[UP] && (_sizeX / 2 - 2 <= x) &&
+					((y == _sizeY - 1) && _visDirection[UP] && ((_sizeX / 2) - 2 <= x) &&
 						(x <= _sizeX / 2 - 2 + SIZEOFCORRIDOR - 3))) 
 				{
 					if (y != _sizeY - 1)
@@ -153,11 +153,13 @@ void battleRoom::createBattleRoomMaping()
 
 bool battleRoom::createBattleRoom(battleRoom*& toBattleRoom, battleRoom* curBattleRoom, int direction, int toX, int toY)
 {
-	curBattleRoom->_visDirection[direction] = true;
-	toBattleRoom->_visDirection[(direction + 2) % 4] = true;
-
 	if (toBattleRoom != nullptr)
+	{
+		curBattleRoom->_visDirection[direction] = true;
+		toBattleRoom->_visDirection[(direction + 2) % 4] = true;
+
 		return false;
+	}
 
 	toBattleRoom = battleRoom::create();
 
@@ -166,5 +168,7 @@ bool battleRoom::createBattleRoom(battleRoom*& toBattleRoom, battleRoom* curBatt
 	toBattleRoom->setCenter(curBattleRoom->_centerX + DirectionX[direction] * CENTERDISTANCE,
 		curBattleRoom->_centerY + DirectionY[direction] * CENTERDISTANCE);
 
+	curBattleRoom->_visDirection[direction] = true;
+	toBattleRoom->_visDirection[(direction + 2) % 4] = true;
 	return true;
 }

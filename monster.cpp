@@ -54,7 +54,7 @@ bool monster::getIsAdded() const { return this->isAdded; }
 
 bool monster::init() {
 	isAdded = false;
-	auto monsterSP = Sprite::create("player.png");
+	auto monsterSP = Sprite::create("Enemy//Ice//enemy007.png");
 	bindSprite(monsterSP);
 	this->schedule(CC_SCHEDULE_SELECTOR(monster::move),0.3f);
 	return true;

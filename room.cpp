@@ -85,22 +85,22 @@ void room::createRoomMaping()
 	//(X, Y) is upLeft Position;
 
 	float curX = X, curY = Y;
-	for (int H = _sizeY - 1; H >= 0; H--) {  // for height and width
-		for (int W = 0; W <= _sizeX - 1; W++) {
-			if ((_direction % 2 == 0) && (H == 0 || H == _sizeY - 1)) {
+	for (int H = _sizeY - 1; H >= 0; H--) 
+	{  // for height and width
+		for (int W = 0; W <= _sizeX - 1; W++) 
+		{
+			if ((_direction % 2 == 0) && (H == 0 || H == _sizeY - 1)) 
+			{
 				if (H == 0)
 					generateWallMaping(curX, curY, 1);
 				else
-					generateWallMaping(curX, curY, 1);
+					generateWallMaping(curX, curY, -1);
 			}
-			else if ((_direction % 2 == 1) && (W == 0 || W == _sizeX - 1)) {
+			else if ((_direction % 2 == 1) && (W == 0 || W == _sizeX - 1)) 
 				generateWallMaping(curX, curY, 1);
-			}
-			else {
+			else 
 				generateFloorMaping(curX, curY, -2);
-			}
 			// randomly generate floor and Wall
-
 			curX += WIDTHOFFLOOR;
 		}
 		curX = X, curY -= HEIGHTOFFLOOR;

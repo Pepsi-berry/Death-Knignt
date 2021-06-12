@@ -12,13 +12,13 @@
 #define PI 3.14159f                         //暂时添加,用途未定
 
 //宏定义方向
-#define UP 0
-#define LEFT 1
-#define DOWN 2
-#define RIGHT 3
-//依次表示上左下右方向
-constexpr int DirectionX[4] = { 0, -1, 0, 1 };  
-constexpr int DirectionY[4] = { 1, 0, -1, 0 };  
+#define RIGHT 0
+#define UP 1
+#define LEFT 2
+#define DOWN 3
+//依次表示右上左下方向
+constexpr int DirectionX[4] = { 1, 0, -1, 0 };  
+constexpr int DirectionY[4] = { 0, 1, 0, -1 };  
 
 #define WIDTHOFWALL 40                      //代表墙壁贴图X向像素点数
 #define HEIGHTOFWALL 60                     //代表墙壁贴图Y向像素点数
@@ -26,11 +26,11 @@ constexpr int DirectionY[4] = { 1, 0, -1, 0 };
 #define WIDTHOFFLOOR 40                     //代表地板贴图X向像素点数
 #define HEIGHTOFFLOOR 40                    //代表地板贴图Y向像素点数
 
-#define SIZEOFROOM 20                       //代表一个常规战斗房间X,Y方向默认包含贴图数量(包含地板和贴图)
+#define SIZEOFROOM 19                       //代表一个常规战斗房间X,Y方向默认包含贴图数量(包含地板和贴图)
 #define SIZEOFCORRIDOR 7                    //代表走廊的默认宽度
 
-#define CENTERDISTANCE 41*40                //代表两房间的默认标准中心距
-#define SIZEOFCENTERDISTANCE 41               //代表两房间的中心距离的贴图数
+#define CENTERDISTANCE 39*40                //代表两房间的默认标准中心距
+#define SIZEOFCENTERDISTANCE 39             //代表两房间的中心距离的贴图数
 
 //定义X,Y方向房间生成的最大数目
 #define NumRoomX 5

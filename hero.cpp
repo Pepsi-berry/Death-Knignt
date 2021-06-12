@@ -9,7 +9,7 @@ void hero::bindscene(Scene* scene) {
 
 bool hero::init()
 {
-	auto spritehero = Sprite::create("player.png");
+	auto spritehero = Sprite::create("knight1.png");
 	bindSprite(spritehero);
 	this->schedule(CC_SCHEDULE_SELECTOR(hero::updatekeyboard),0.01f);
 	return true;

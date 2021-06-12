@@ -1,5 +1,6 @@
-#include"cocos2d.h"
-#include"set_scene.h"
+#include "cocos2d.h"
+#include "set_scene.h"
+#include "battleScene.h"
 
 
 
@@ -46,6 +47,7 @@ bool set_scene::init()
 
     heroForTest = hero::create();
     heroForTest->bindscene(this);
+    heroForTest->getSprite()->setScale(0.1);
     heroForTest->getSprite()->setPosition(winSize.width * 0.5f, winSize.height * 0.5f);
     this->addChild(heroForTest, 5);
 
@@ -56,6 +58,8 @@ bool set_scene::init()
     monsterfort->bindAtBattleRoom(this);
     monsterfort->getSprite()->setPosition(std::rand() % ((int)(0.75*winx))+ (int)(0.25 * winx), std::rand() % ((int)(0.75 * winy)) + (int)(0.25 * winy));
     this->addChild(monsterfort, 5);
+    Director::getInstance()->pushScene(TransitionCrossFade::create(2.0f, battleScene::createBattleScene()));
+
 
     return true;
 }
