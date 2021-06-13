@@ -25,6 +25,8 @@ public:
 
 	Scene* getAtBattleRoom() const; 
 
+	void dead();
+
 private:
 	void setAttackRange();
 	int enemyType = 0;

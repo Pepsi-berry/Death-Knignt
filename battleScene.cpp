@@ -4,6 +4,29 @@
 hero* battleScene::Hero = nullptr;
 int battleScene::_battleSceneNumber = 0;
 
+void battleScene::bindmonster(monster* mons)
+{
+	monsterforT = mons;
+}
+
+monster* battleScene::getmonster()
+{
+	return monsterforT;
+}
+
+Scene* battleScene::createBattleScene()
+{
+	Scene* scene = Scene::createWithPhysics();
+	//设置Debug模式，你会看到物体的表面被线条包围，主要为了在调试中更容易地观察
+	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
+	battleScene* layer = battleScene::create();
+	//把空间保持我们创建的层中，就是上面所说m_world的作用，方便后面设置空间的参数
+	layer->setPhyWorld(scene->getPhysicsWorld());
+	scene->addChild(layer);
+	return scene;
+}
+
+
 bool battleScene::init()
 {
 	if (!Scene::init())
@@ -13,12 +36,94 @@ bool battleScene::init()
 	initBattleRoomGenerate(); 
 	connectRoom(_beginRoom); 
 
+	//后期考虑将下述添加过程做函数拆分工作
+	//添加英雄并对其完成初始化
+	Hero = hero::create();
+	Hero->initmem(5.0, 10, 10);
+	Hero->bindscene(this);
+	Hero->setPosition(Point(visibleSize.width / 2, visibleSize.height / 2));
+	PhysicsBody* herobody = PhysicsBody::createBox(Hero->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+	herobody->setGravityEnable(false);
+	herobody->setDynamic(false);
+	herobody->setCategoryBitmask(0x0001);
+	herobody->setCollisionBitmask(0x0001);
+	herobody->setContactTestBitmask(0x0001);
+	Hero->addComponent(herobody);
+	Hero->setTag(1);
+	this->addChild(Hero, 0);
+
+
+	monsterforT = monster::create();
+	this->bindmonster(monsterforT);
+	this->getmonster();
+	this->getmonster()->setPosition(Point(visibleSize.width / 4, visibleSize.height / 4));
+	PhysicsBody* physicsBody2 = PhysicsBody::createBox(this->getmonster()->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+	physicsBody2->setGravityEnable(false);
+	physicsBody2->setDynamic(false);
+	physicsBody2->setCategoryBitmask(0x0001);
+	physicsBody2->setCollisionBitmask(0x0001);
+	physicsBody2->setContactTestBitmask(0x0001);
+	this->getmonster()->addComponent(physicsBody2);
+	this->getmonster()->setTag(2);
+	this->addChild(this->getmonster(), 0);
+
+	auto contactListener = EventListenerPhysicsContact::create();
+	contactListener->onContactBegin = CC_CALLBACK_1(battleScene::onContactBegin, this);
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(contactListener, this);
+
 	this->scheduleUpdate();
 	return true;
 }
 
+bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
+{
+	auto nodeA = contact.getShapeA()->getBody()->getNode();
+	auto nodeB = contact.getShapeB()->getBody()->getNode();
+	if (nodeA && nodeB)
+	{
+		if (nodeB->getTag() == 2)
+		{
+			monsterforT = dynamic_cast<monster*>(nodeB);
+			monsterforT->removeAllComponents();
+			monsterforT->dead();
+		}
+		else 
+		{
+			monsterforT = dynamic_cast<monster*>(nodeA);
+			monsterforT->removeAllComponents();
+			monsterforT->dead();
+		}
+	}
+    return true;
+}
+
 void battleScene::update(float delta)
 {
+	updateBattleScenePosition();
+}
+
+//暂时只包括视野移动
+void battleScene::updateBattleScenePosition()
+{
+	float mvSpeedX = Hero->getmovespeedX();
+	float mvSpeedY = Hero->getmovespeedY();
+
+	CCLOG("mvSpeedX%f,mvSpeedY%f", mvSpeedX, mvSpeedY);
+
+	for (int y = 0; y < NumRoomY; y++)
+	{ //修改所有子节点战斗房间位置
+		for (int x = 0; x < NumRoomY; x++)
+		{
+			if (_battleRoomMatrix[x][y] == nullptr)
+				continue;
+			battleRoom* curRoom = _battleRoomMatrix[x][y];
+			curRoom->moveRoomPosition(-mvSpeedX, -mvSpeedY);
+		}
+	}
+	for (auto corridor : vecCorridor)
+	{ //修改所有子节点走廊位置
+		corridor->moveRoomPosition(-mvSpeedX, -mvSpeedY);
+	}
 
 }
 
@@ -212,7 +317,6 @@ void battleScene::initBattleRoomGenerate()
 			memcpy(curRoom->_visDirectionCpy, curRoom->_visDirection, sizeof(curRoom->_visDirection));
 		}
 	}
-
 }
 
 void battleScene::setCorridorWithWidth(room* corridor,const battleRoom* fromBattleRoom,const battleRoom* toBattleRoom)

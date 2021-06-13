@@ -6,6 +6,8 @@ USING_NS_CC;
 #ifndef _HERO_
 #define _HERO_
 
+class monster;
+
 class hero :public character
 {
 public:
@@ -22,11 +24,27 @@ public:
 	void truekeycode(EventKeyboard::KeyCode Keycode);
 	void falsekeycode(EventKeyboard::KeyCode Keycode);
 
-	virtual void getdamage(int damage) { _HP -= damage; }
+	void setMaxArmor(int maxarmor);
+	int getMaxArmor() const;
+	void setArmor(int armor);
+	int getArmor() const;
+
+	void setmovespeedX(float spd);
+	void setmovespeedY(float spd);
+	float getmovespeedX() const;
+	float getmovespeedY() const;
+
+	virtual void getdamage(int damage);
+
+	void initmem(float speed, int armormax, int hpmax);
+
+	Animate* Frame_animation();
 	
 protected:
 	std::map<cocos2d::EventKeyboard::KeyCode, bool> keyMap;
-	float _heroSpeed;
+	float _heroSpeedX = 5, _heroSpeedY = 5;
 	Scene* _scene;
+	int _armor;
+	int _armorMax;
 };
 #endif

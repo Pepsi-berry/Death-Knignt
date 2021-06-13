@@ -3,6 +3,8 @@
 
 #include "room.h"
 
+class monster;
+
 USING_NS_CC;
 
 class battleRoom : public room 
@@ -41,6 +43,8 @@ private:
 
 	Vector<weapon*> _vecWeapon;                 //用于对生成的武器进行管理,主要在于切换武器
 	Vector<Sprite*> _vecBox;                    //用于对生成在地图中的箱子进行管理,主要在于开箱子
+	//Vector<monster*> _vecMonster;                //储存生成在房间中的怪物实体,便于进行更新状态和射击等的功能实现
+
 
 
 };

@@ -17,6 +17,22 @@ bool room::init()
 	return true;
 }
 
+void room::moveRoomPosition(float mvSpeedX,float mvSpeedY)
+{
+	_topLeftCornerPositionX += mvSpeedX;
+	_topLeftCornerPositionY += mvSpeedY;
+	_lowerRightCornerPositionX += mvSpeedX;
+	_lowerRightCornerPositionX += mvSpeedY;
+	_centerX += mvSpeedX;
+	_centerY += mvSpeedY;
+
+	for (auto child : getChildren())
+	{
+		float curPositionX = child->getPositionX(), curPositionY = child->getPositionY();
+		child->setPosition(Point(curPositionX + mvSpeedX, curPositionY + mvSpeedY));
+	}
+}
+
 void room::update(float delta)
 {
 

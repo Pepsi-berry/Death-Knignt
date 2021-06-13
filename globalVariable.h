@@ -20,6 +20,10 @@
 constexpr int DirectionX[4] = { 1, 0, -1, 0 };  
 constexpr int DirectionY[4] = { 0, 1, 0, -1 };  
 
+//宏定义画面时更新的移动方向
+#define MvDirectionLR 0
+#define MvDirectionUD 1
+
 #define WIDTHOFWALL 40                      //代表墙壁贴图X向像素点数
 #define HEIGHTOFWALL 60                     //代表墙壁贴图Y向像素点数
 

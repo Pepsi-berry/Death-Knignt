@@ -5,6 +5,8 @@
 #include "battleRoom.h"
 #include "hero.h"
 
+class monster;
+
 USING_NS_CC;
 
 class battleScene : public Scene
@@ -34,22 +36,49 @@ public:
 
 	void setRoomType();                                                     //设置关卡矩阵中被初始化的房间的类型
 
-	static Scene* createBattleScene() { return battleScene::create(); }
+	static Scene* createBattleScene();
+
+
+	void bindmonster(monster* mons);
+
+	monster* getmonster();
+
+
+	bool onContactBegin(cocos2d::PhysicsContact& contact);
+
+	//更新类函数
+	void updateBattleScenePosition();                                                     //更新人物移动造成的画面位置变化
+
+
+	//
+	//
+
+	/**/	
+	PhysicsWorld* m_world;
+	void setPhyWorld(PhysicsWorld* world) { m_world = world; };
+	/**/
+
+
+
+
+
 private:
-	static int _battleSceneNumber;                    //代表大关卡内的小场景编号
-	static int _battleSceneType;                      //大关卡类型
+	monster* monsterforT;
+	static int _battleSceneNumber;                                          //代表大关卡内的小场景编号
+	static int _battleSceneType;                                            //大关卡类型
 
 	static hero* Hero;
 
 	battleRoom* _beginRoom = nullptr;
 	battleRoom* _endRoom = nullptr;
-	battleRoom* _battleRoomMatrix[NumRoomX][NumRoomY] = { nullptr };       //初始化房间位置选取的范围矩阵
+	battleRoom* _battleRoomMatrix[NumRoomX][NumRoomY] = { nullptr };        //初始化房间位置选取的范围矩阵
 
 	//储存生成的下列地图元素的指针,用于对地图元素的管理
 	Vector<Sprite*> vecFloor;                                              
 	Vector<Sprite*> vecWall;
 	Vector<Sprite*> vecDoor;
 	Vector<room*> vecCorridor;
+
 
 	int countForRoom;
 
