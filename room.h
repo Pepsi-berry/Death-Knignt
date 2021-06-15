@@ -26,6 +26,8 @@ public:
 	float getCenterX() { return _centerX; }
 	float getCenterY() { return _centerY; }
 
+	bool getIsAtRoom(hero* Hero);
+
 	void createRoomMaping();                //调用函数添加子节点生成较完备房间贴图
 
 	void moveRoomPosition(float mvSpeedX,float mvSpeedY);   //移动房间位置以更新画面

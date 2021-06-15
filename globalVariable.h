@@ -7,6 +7,7 @@
 #include <map>
 #include "bullet.h"
 #include "weapon.h"
+#include "monster.h"
 #include "RangedWeapon.h"
 
 #define PI 3.14159f                         //暂时添加,用途未定

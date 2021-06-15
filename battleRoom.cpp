@@ -53,6 +53,50 @@ void battleRoom::createBox(float positionX,float positionY)
 	this->addChild(box, 10);
 	this->getVecBox().pushBack(box);
 }
+
+void battleRoom::createMonster()
+{
+	srand(static_cast<unsigned int>(time(nullptr)));
+	int monsterNumber = 2 + rand() % 4;                           //随机初始化敌人产生数目
+	for (int i = 1; i <= monsterNumber; i++)
+	{
+		float enemyPositionX = _centerX + (rand()) % 300;
+		float enemyPositionY = _centerY + (rand()) % 300;
+		monster* tempMonster = monster::create();
+		tempMonster->bindAtBattleRoom(this);
+		tempMonster->setPosition(Point(enemyPositionX, enemyPositionY));
+		PhysicsBody* physicsBody2 = PhysicsBody::createBox(tempMonster->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+		physicsBody2->setGravityEnable(false);
+		physicsBody2->setDynamic(false);
+		physicsBody2->setCategoryBitmask(0x0001);
+		physicsBody2->setCollisionBitmask(0x0001);
+		physicsBody2->setContactTestBitmask(0x0001);
+		tempMonster->addComponent(physicsBody2);
+		tempMonster->setTag(2);
+		_vecMonster.pushBack(tempMonster);
+		this->addChild(tempMonster, 0);
+
+		//tempMonster->bindAtBattleRoom(this);                    //绑定所在房间
+		//tempMonster->startCount = i * 2;
+		// 
+		//auto monsterforT = monster::create();
+		////this->bindmonster(monsterforT);
+		////this->getmonster();
+		//monsterforT->setPosition(Point((visibleSize.width * (i + 1)) / 5, (visibleSize.height * (i + 1)) / 5));
+		//PhysicsBody* physicsBody2 = PhysicsBody::createBox(monsterforT->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+		//physicsBody2->setGravityEnable(false);
+		//physicsBody2->setDynamic(false);
+		//physicsBody2->setCategoryBitmask(0x0001);
+		//physicsBody2->setCollisionBitmask(0x0001);
+		//physicsBody2->setContactTestBitmask(0x0001);
+		//monsterforT->addComponent(physicsBody2);
+		//monsterforT->setTag(2);
+		//vecMonster.pushBack(monsterforT);
+		//this->addChild(monsterforT, 0);
+	}
+
+}
+
 void battleRoom::createBattleRoomMaping()
 {
 	srand(time(nullptr));
@@ -88,6 +132,9 @@ void battleRoom::createBattleRoomMaping()
 	_lowerRightCornerPositionX = X + WIDTHOFFLOOR * (_sizeX - 2);
 	_lowerRightCornerPositionY = Y - HEIGHTOFFLOOR * (_sizeY - 2);
 
+	CCLOG("%f,%f", _centerX, _centerY);
+	//CCLOG("%d,%d", X, Y);
+	//CCLOG("%d,%d", _topLeftCornerPositionX, _lowerRightCornerPositionX);
 	float curX = X, curY = Y;
 	for (int y = _sizeY - 1; y >= 0; y--) 
 	{  // for height and width
@@ -172,3 +219,18 @@ bool battleRoom::createBattleRoom(battleRoom*& toBattleRoom, battleRoom* curBatt
 	toBattleRoom->_visDirection[(direction + 2) % 4] = true;
 	return true;
 }
+//
+//bool battleRoom::getIsAtBattleRoom(hero* Hero)
+//{
+//	float heroPositionX = Hero->getPositionX();
+//	float heroPositionY = Hero->getPositionY();
+//
+//	//CCLOG("%d,%d",_columnNum, _rowNum);
+//	//CCLOG("heroPositionX %f,heroPositionY %f,_topLeftCornerPositionX %f,_topLeftCornerPositionY %f, _lowerRightCornerPositionX %f,_lowerRightCornerPositionY %f", heroPositionX, heroPositionY, _topLeftCornerPositionX, _topLeftCornerPositionY
+//		//, _lowerRightCornerPositionX, _lowerRightCornerPositionY);
+//	if (heroPositionX >= _topLeftCornerPositionX - WIDTHOFFLOOR && heroPositionX <= _lowerRightCornerPositionX + WIDTHOFFLOOR
+//		&& heroPositionY >= _lowerRightCornerPositionY - HEIGHTOFFLOOR && heroPositionY <= _topLeftCornerPositionY + HEIGHTOFFLOOR)
+//		return true;
+//	else
+//		return false;
+//}

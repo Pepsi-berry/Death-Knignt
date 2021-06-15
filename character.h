@@ -2,7 +2,7 @@
 #define _CHARACTER_
 
 #include "cocos2d.h"
-class battleRoom;
+//class battleRoom;
 
 USING_NS_CC;
 
@@ -22,7 +22,7 @@ public:
 	int getHP() const;
 	void setMoveSpeed(float movespeed);
 	float getMoveSpeed() const;
-	void bindCurBattleRoom(battleRoom* curBattleRoom) { _curBattelRoom = curBattleRoom; }
+	//void bindCurBattleRoom(battleRoom* curBattleRoom) { _curBattelRoom = curBattleRoom; }
 
 	bool isdead() const;
 
@@ -30,7 +30,7 @@ public:
 
 protected:
 	Sprite* base_sprite;
-	battleRoom* _curBattelRoom;
+	//battleRoom* _curBattelRoom;
 	int _HP = 10, _maxHP = 10;
 	float _moveSpeed = 12.0f;
 

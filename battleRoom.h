@@ -3,7 +3,7 @@
 
 #include "room.h"
 
-class monster;
+//class monster;
 
 USING_NS_CC;
 
@@ -19,16 +19,24 @@ public:
 
 	void createBattleRoomMaping();
 	void createBox(float positionX, float positionY);
+	void createMonster();
 	void generateDoorMaping(float positionX, float positionY, int layer);
 
 	void setRowNum(int rowNum) { _rowNum = rowNum; }
 	void setcolumnNum(int columnNum) { _columnNum = columnNum; }
+	void setIsAtBattleRoom(bool isAtBattleRoom) { _isAtBattleRoom = isAtBattleRoom; }
+	void setBattleRoomType(int battleRoomType) { _battleRoomType = battleRoomType; }
+	//bool checkIsAtBattleRoom();
+	void setBoundaryBarrier(hero* Hero);
 
 	int getRowNum() { return _rowNum; }
 	int getColumnNum() { return _columnNum; }
+	//bool getIsAtBattleRoom(hero* Hero);
+	int getBattleRoomType() { return _battleRoomType; }
 
 	Vector<weapon*>& getVecWeapon() { return _vecWeapon; }
 	Vector<Sprite*>& getVecBox() { return _vecBox; }
+	Vector<monster*>& getVecMonster() { return _vecMonster; }
 
 //protected:
 //
@@ -41,9 +49,11 @@ private:
 	bool _visDirection[4] = { false };          //储存房间某方向是否已存在房间
 	bool _visDirectionCpy[4] = { false };       
 
+	bool _isAtBattleRoom;                       //储存游戏主角是否位于该房间
+
 	Vector<weapon*> _vecWeapon;                 //用于对生成的武器进行管理,主要在于切换武器
 	Vector<Sprite*> _vecBox;                    //用于对生成在地图中的箱子进行管理,主要在于开箱子
-	//Vector<monster*> _vecMonster;                //储存生成在房间中的怪物实体,便于进行更新状态和射击等的功能实现
+	Vector<monster*> _vecMonster;               //储存生成在房间中的怪物实体,便于进行更新状态和射击等的功能实现
 
 
 

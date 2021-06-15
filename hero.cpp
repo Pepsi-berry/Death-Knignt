@@ -1,4 +1,5 @@
 #include "hero.h"
+#include "battleRoom.h"
 
 hero::~hero() {}
 
@@ -15,7 +16,7 @@ Animate* hero::Frame_animation() {
 
 	hero_frame_animation->setDelayPerUnit(0.1f);
 
-	hero_frame_animation->setLoops(2);
+	hero_frame_animation->setLoops(1);
 
 	hero_frame_animation->setRestoreOriginalFrame(true);
 
@@ -73,6 +74,7 @@ void hero::updatekeyboard(float delta)
 	auto left = EventKeyboard::KeyCode::KEY_A;
 	auto up = EventKeyboard::KeyCode::KEY_W;
 	auto down = EventKeyboard::KeyCode::KEY_S;
+	auto shoot = EventKeyboard::KeyCode::KEY_J;
 
 	auto winSize = Director::getInstance()->getVisibleSize();
 	Vec2 me_size = this->getContentSize();
@@ -149,6 +151,36 @@ void hero::updatekeyboard(float delta)
 	//{
 	//	getSprite()->stopAllActions();
 	//}
+
+	if(keyMap[shoot])
+		if (this->getCurBattleRoom() != nullptr)
+		{
+			CCLOG("X%d,Y%d", this->getCurBattleRoom()->getColumnNum(), this->getCurBattleRoom()->getRowNum());
+			if (this->getCurBattleRoom()->getBattleRoomType() == TypeNormal)
+			{
+				auto Bullet = bullet::create();
+				monster* nearMonster = nullptr;
+				Vec2 curPos = this->getPosition();
+				float distance = 99999;
+				int set_x = this->getContentSize().width/2;
+				int set_y = this->getContentSize().height/2;
+				Bullet->setPosition(set_x, set_y);
+				this->addChild(Bullet);
+				for (monster* curMonster : this->getCurBattleRoom()->getVecMonster())
+				{
+					Vec2 enemyPos = curMonster->getPosition();
+					if (enemyPos.distance(curPos) < distance) 
+					{
+						nearMonster = curMonster;
+						distance = enemyPos.distance(curPos);
+					}
+				}
+				Vec2 target = nearMonster->getPosition() - curPos;
+				auto moveby = MoveBy::create(0.1f, target*3);
+				Bullet->runAction(moveby);
+			}
+		}
+
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 }
 

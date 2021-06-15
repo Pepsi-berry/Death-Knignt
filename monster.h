@@ -1,4 +1,4 @@
-#include"cocos2d.h"
+#include "cocos2d.h"
 #include <vector>
 #include "character.h"
 
@@ -6,6 +6,8 @@ USING_NS_CC;
 
 #ifndef _MONSTER_H_
 #define _MONSTER_H_
+
+class battleRoom;
 
 class monster : public character {
 public:
@@ -17,13 +19,13 @@ public:
 
 	virtual bool init();
 
-	void bindAtBattleRoom(Scene* scene);
+	void bindAtBattleRoom(battleRoom* curBattleRoom);
 
 	bool getIsAdded() const; 
 
 	void setIsAdded(bool); 
 
-	Scene* getAtBattleRoom() const; 
+	battleRoom* getAtBattleRoom() const; 
 
 	void dead();
 
@@ -33,7 +35,7 @@ private:
 	int ATTACKRANGE;
 	bool isAdded;  
 protected:
-	Scene* atBattleRoom;
+	battleRoom* atBattleRoom;
 };
 
 #endif

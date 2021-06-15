@@ -1,58 +1,66 @@
 #include <bullet.h>
-//
-inline bool bullet::initBulletMem(float damage, float movingSpeed, bool isCrit, bool isUsed)     //完成对主要成员的初始化
-{
-	auto dmgTemp = std::make_shared<float>(damage);
-	if (!dmgTemp) 
-		return false;
-	else 
-		_damage = dmgTemp;
 
-	auto mvspTemp = std::make_shared<float>(movingSpeed);
-	if (!mvspTemp) 
-		return false;
-	else 
-		_movingSpeed = mvspTemp;
-	_isCrit = isCrit;
-	_isUsed = isUsed;
+bullet::~bullet() {}
+
+void bullet::bindSprite(Sprite* bulletSprite)
+{
+	this->s_bullet = bulletSprite;
+	Size size = this->s_bullet->getContentSize();
+	this->setContentSize(size);
+
+	this->setAnchorPoint(Point(0.5f, 0.5f));
+	setPosition(Point(.0f, .0f));
+
+	this->addChild(s_bullet);
+	this->s_bullet ->setPosition(Point(size.width / 2, size.height / 2));
+}
+
+Sprite* bullet::getSprite()const
+{
+	return this->s_bullet;
+}
+
+void bullet::bindHero(hero* curHero)
+{
+	this->t_hero = curHero;
+}
+
+hero* bullet::getHero()const
+{
+	return this->t_hero;
+}
+
+void bullet::bindBattleScene(Scene* curbattleScene)
+{
+	this->t_battleScene = curbattleScene;
+}
+
+Scene* bullet::getBattleScene()const
+{
+	return this->t_battleScene;
+}
+
+void bullet::initMem(float speed)
+{
+	this->_bulletSpeed = speed;
+}
+
+float bullet::getBulletSpeed()
+{
+	return this->_bulletSpeed;
+}
+
+bool bullet::init()
+{
+	auto t_bullet = Sprite::create("Bullet//bigBullet.png");
+	bindSprite(t_bullet);
+	//PhysicsBody* bulletbody = PhysicsBody::createBox(this->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+	//bulletbody->setGravityEnable(false);
+	//bulletbody->setDynamic(false);
+	//bulletbody->setCategoryBitmask(0x0001);
+	//bulletbody->setCollisionBitmask(0x0001);
+	//bulletbody->setContactTestBitmask(0x0001);
+	//this->addComponent(bulletbody);
+	//this->setTag(3);
 	return true;
-}
-//
-bool bullet::initBullet(const std::string& spriteFrameName, float damage, float speed, bool isCrit, bool isUsed)
-{
-	/***************************************************改动行***************************************************/
-	return ((_spriteInBullet = Sprite::create(spriteFrameName)) && initBulletMem(damage, speed, isCrit, isUsed));
-	/***************************************************改动行***************************************************/
-}
-//
-bullet* bullet::clone(bool isCrit)const {                                           //实现快速复制子弹
-	bullet* temp = new(std::nothrow) bullet();
-
-	if (temp)
-	{
-		/***************************************************改动行***************************************************/
-		temp->_spriteInBullet->setSpriteFrame(this->_spriteInBullet->getSpriteFrame());
-		/***************************************************改动行***************************************************/
-		temp->_damage = _damage;
-		temp->_movingSpeed = _movingSpeed;
-		temp->_isCrit =isCrit;
-		return temp;
-	}
-	else
-	{
-		delete temp;
-		temp = nullptr;
-		return nullptr;
-	}
-}
-//
-//调用以进行一个bullet对象的创建
-std::shared_ptr<bullet> bullet::createBullet(const std::string& spriteFrameName, float damage, float movingSpeed, bool isCrit, bool isUsed)
-{
-	auto temp = std::make_shared<bullet>();
-	  
-	if (temp && temp->initBullet(spriteFrameName, damage, movingSpeed, isCrit, isUsed))
-		return temp;
-	else 
-		return std::shared_ptr<bullet>(nullptr);
 }

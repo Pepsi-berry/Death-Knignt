@@ -61,11 +61,11 @@ void monster::move(float delta)
 	}
 }
 
-void monster::bindAtBattleRoom(Scene* scene) {
-	this->atBattleRoom = scene; 
+void monster::bindAtBattleRoom(battleRoom* curBattleRoom) {
+	this->atBattleRoom = curBattleRoom;
 }
 
-Scene* monster::getAtBattleRoom() const { return this->atBattleRoom; }
+battleRoom* monster::getAtBattleRoom() const { return this->atBattleRoom; }
 
 void monster::setIsAdded(bool status) { this->isAdded = status; }
 

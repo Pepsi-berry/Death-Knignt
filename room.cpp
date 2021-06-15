@@ -17,12 +17,22 @@ bool room::init()
 	return true;
 }
 
+bool room::getIsAtRoom(hero* Hero)
+{
+	float curHeroPositionX = Hero->getPositionX();
+	float curHeroPositionY = Hero->getPositionY();
+	if (curHeroPositionX > _topLeftCornerPositionX - WIDTHOFFLOOR && curHeroPositionX < _lowerRightCornerPositionX + WIDTHOFFLOOR &&
+		curHeroPositionY < _topLeftCornerPositionY + HEIGHTOFFLOOR && curHeroPositionY > _lowerRightCornerPositionY - HEIGHTOFFLOOR)
+		return true;
+	return false;
+}
+
 void room::moveRoomPosition(float mvSpeedX,float mvSpeedY)
 {
 	_topLeftCornerPositionX += mvSpeedX;
 	_topLeftCornerPositionY += mvSpeedY;
 	_lowerRightCornerPositionX += mvSpeedX;
-	_lowerRightCornerPositionX += mvSpeedY;
+	_lowerRightCornerPositionY += mvSpeedY;
 	_centerX += mvSpeedX;
 	_centerY += mvSpeedY;
 
@@ -95,6 +105,9 @@ void room::generateWallMaping(float positionX, float positionY, int layer)
 void room::createRoomMaping()
 {
 	srand(time(nullptr));
+
+	//CCLOG("%d,%d", _topLeftCornerPositionX, _topLeftCornerPositionY);
+
 
 	const float X = _topLeftCornerPositionX - (_direction % 2 == 0 ? 0 : WIDTHOFFLOOR);
 	const float Y = _topLeftCornerPositionY + (_direction % 2 == 0 ? HEIGHTOFFLOOR : 0);

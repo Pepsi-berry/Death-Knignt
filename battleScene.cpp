@@ -1,18 +1,18 @@
 #include "battleScene.h"
-#include "set_scene.h"
+//#include "set_scene.h"
 
 hero* battleScene::Hero = nullptr;
 int battleScene::_battleSceneNumber = 0;
 
-void battleScene::bindmonster(monster* mons)
-{
-	monsterforT = mons;
-}
-
-monster* battleScene::getmonster()
-{
-	return monsterforT;
-}
+//void battleScene::bindmonster(monster* mons)
+//{
+//	monsterforT = mons;
+//}
+//
+//monster* battleScene::getmonster()
+//{
+//	return monsterforT;
+//}
 
 Scene* battleScene::createBattleScene()
 {
@@ -52,20 +52,24 @@ bool battleScene::init()
 	Hero->setTag(1);
 	this->addChild(Hero, 0);
 
-
-	monsterforT = monster::create();
-	this->bindmonster(monsterforT);
-	this->getmonster();
-	this->getmonster()->setPosition(Point(visibleSize.width / 4, visibleSize.height / 4));
-	PhysicsBody* physicsBody2 = PhysicsBody::createBox(this->getmonster()->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
-	physicsBody2->setGravityEnable(false);
-	physicsBody2->setDynamic(false);
-	physicsBody2->setCategoryBitmask(0x0001);
-	physicsBody2->setCollisionBitmask(0x0001);
-	physicsBody2->setContactTestBitmask(0x0001);
-	this->getmonster()->addComponent(physicsBody2);
-	this->getmonster()->setTag(2);
-	this->addChild(this->getmonster(), 0);
+	initEnemy();
+	//for (int i = 0; i < 4; i++)
+	//{
+	//	auto monsterforT = monster::create();
+	//	//this->bindmonster(monsterforT);
+	//	//this->getmonster();
+	//	monsterforT->setPosition(Point((visibleSize.width * (i + 1)) / 5, (visibleSize.height * (i + 1)) / 5));
+	//	PhysicsBody* physicsBody2 = PhysicsBody::createBox(monsterforT->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+	//	physicsBody2->setGravityEnable(false);
+	//	physicsBody2->setDynamic(false);
+	//	physicsBody2->setCategoryBitmask(0x0001);
+	//	physicsBody2->setCollisionBitmask(0x0001);
+	//	physicsBody2->setContactTestBitmask(0x0001);
+	//	monsterforT->addComponent(physicsBody2);
+	//	monsterforT->setTag(2);
+	//	vecMonster.pushBack(monsterforT);
+	//	this->addChild(monsterforT, 0);
+	//}
 
 	auto contactListener = EventListenerPhysicsContact::create();
 	contactListener->onContactBegin = CC_CALLBACK_1(battleScene::onContactBegin, this);
@@ -77,28 +81,52 @@ bool battleScene::init()
 
 bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 {
+	monster* monster1;
+	bullet* bullet1;
 	auto nodeA = contact.getShapeA()->getBody()->getNode();
 	auto nodeB = contact.getShapeB()->getBody()->getNode();
 	if (nodeA && nodeB)
 	{
-		if (nodeB->getTag() == 2)
+		if (nodeB->getTag() == 2 && nodeA->getTag() == 1)
 		{
-			monsterforT = dynamic_cast<monster*>(nodeB);
-			monsterforT->removeAllComponents();
-			monsterforT->dead();
+			monster1 = dynamic_cast<monster*>(nodeB);
+			monster1->removeAllComponents();
+			monster1->dead();
 		}
-		else 
+		else if (nodeA->getTag() == 2 && nodeB->getTag() == 1)
 		{
-			monsterforT = dynamic_cast<monster*>(nodeA);
-			monsterforT->removeAllComponents();
-			monsterforT->dead();
+			monster1 = dynamic_cast<monster*>(nodeA);
+			monster1->removeAllComponents();
+			monster1->dead();
 		}
+		//else if (nodeA->getTag() == 2 && nodeB->getTag() == 3)
+		//{
+		//	monster1 = dynamic_cast<monster*>(nodeA);
+		//	bullet1 = dynamic_cast<bullet*>(nodeB);
+		//	monster1->removeAllComponents();
+		//	monster1->dead();
+		//	bullet1->removeAllComponents();
+		//	bullet1->removeAllChildren();
+		//}
 	}
     return true;
 }
 
+void battleScene::initEnemy()
+{
+	for (int y = 0; y < NumRoomY; y++)
+		for (int x = 0; x < NumRoomX; x++)
+		{
+			auto curBattleRoom = _battleRoomMatrix[y][x];
+			if (curBattleRoom == nullptr)
+				continue;
+			if (curBattleRoom->_battleRoomType == TypeNormal)
+				curBattleRoom->createMonster();
+		}
+}
 void battleScene::update(float delta)
 {
+	updateRoomHeroLocated();
 	updateBattleScenePosition();
 }
 
@@ -108,7 +136,7 @@ void battleScene::updateBattleScenePosition()
 	float mvSpeedX = Hero->getmovespeedX();
 	float mvSpeedY = Hero->getmovespeedY();
 
-	CCLOG("mvSpeedX%f,mvSpeedY%f", mvSpeedX, mvSpeedY);
+	//CCLOG("mvSpeedX%f,mvSpeedY%f", mvSpeedX, mvSpeedY);
 
 	for (int y = 0; y < NumRoomY; y++)
 	{ //修改所有子节点战斗房间位置
@@ -121,10 +149,45 @@ void battleScene::updateBattleScenePosition()
 		}
 	}
 	for (auto corridor : vecCorridor)
-	{ //修改所有子节点走廊位置
 		corridor->moveRoomPosition(-mvSpeedX, -mvSpeedY);
-	}
 
+}
+
+void battleScene::updateRoomHeroLocated()
+{
+	//先判断是否位于某战斗房间
+	bool isAtBattleRoomOrCorridor = false;                 //储存位于走廊或战斗房间
+	for (int y = 0; y < NumRoomY; y++)
+		for (int x = 0; x < NumRoomX; x++)
+		{
+			battleRoom* curBattleRoom = _battleRoomMatrix[y][x];
+			if (curBattleRoom == nullptr)
+				continue;
+			CCLOG("%d,%d", y, x);
+			CCLOG("heroPositionX %f,heroPositionY %f,_topLeftCornerPositionX %f,_topLeftCornerPositionY %f, _lowerRightCornerPositionX %f,_lowerRightCornerPositionY %f",
+				Hero->getPositionX(), Hero->getPositionY(), curBattleRoom->_topLeftCornerPositionX, curBattleRoom->_topLeftCornerPositionY, curBattleRoom->_lowerRightCornerPositionX, curBattleRoom->_lowerRightCornerPositionY);
+			if (curBattleRoom->getIsAtRoom(Hero) == true)
+			{
+				Hero->setCurBattleRoom(curBattleRoom);
+				Hero->setCurCorridor(nullptr);
+				isAtBattleRoomOrCorridor = true;
+				//CCLOG("%d,%d", curBattleRoom->_columnNum, curBattleRoom->_rowNum);
+				//CCLOG("heroPositionX %f,heroPositionY %f,_topLeftCornerPositionX %f,_topLeftCornerPositionY %f, _lowerRightCornerPositionX %f,_lowerRightCornerPositionY %f",
+				//	Hero->getPositionX(), Hero->getPositionY(), curBattleRoom->_topLeftCornerPositionX, curBattleRoom->_topLeftCornerPositionY, curBattleRoom->_lowerRightCornerPositionX, curBattleRoom->_lowerRightCornerPositionY);
+
+				//CCLOG("%d,%d", x, y);
+			}
+		}
+	if (isAtBattleRoomOrCorridor)
+		return;
+	for (room* curCorridor : vecCorridor)
+	{
+		if (curCorridor->getIsAtRoom(Hero))
+		{
+			Hero->setCurBattleRoom(nullptr);
+			Hero->setCurCorridor(curCorridor);
+		}
+	}
 }
 
 void battleScene::nextRoomGenerate(int column, int row, battleRoom* curRoom, std::queue<battleRoom*>& roomQueue)
@@ -205,9 +268,10 @@ void battleScene::beginRoomGenerate(int column, int row)
 
 	Room->setcolumnNum(column);
 	Room->setRowNum(row);
-	log("curRoom %d %d", Room->getColumnNum(), Room->getRowNum());
-	log("beginRoom %d %d", _beginRoom->getColumnNum(), _beginRoom->getRowNum());
+	//log("curRoom %d %d", Room->getColumnNum(), Room->getRowNum());
+	//log("beginRoom %d %d", _beginRoom->getColumnNum(), _beginRoom->getRowNum());
 	Room->setCenter(visibleSize.width / 2, visibleSize.height / 2);
+
 	this->addChild(Room, 0);
 
 	roomQueue.push(Room);
@@ -328,6 +392,7 @@ void battleScene::setCorridorWithWidth(room* corridor,const battleRoom* fromBatt
 
 	corridor->_lowerRightCornerPositionX = toBattleRoom->_centerX - WIDTHOFFLOOR * (toBattleRoom->_sizeX / 2 + 1);
 	corridor->_lowerRightCornerPositionY = toBattleRoom->_centerY - HEIGHTOFFLOOR * (SIZEOFCORRIDOR / 2 - 1);
+	//CCLOG("W %d,%d", corridor->_topLeftCornerPositionX, corridor->_topLeftCornerPositionY);
 	corridor->createRoomMaping();
 	////确定小地图绘制顶点
 	//float downLeftX = miniMap->miniRoom[fromRoom->x][fromRoom->y]->upRightX;
@@ -347,6 +412,7 @@ void battleScene::setCorridorWithHeight(room* corridor, const battleRoom* fromBa
 
 	corridor->_lowerRightCornerPositionX = toBattleRoom->_centerX + WIDTHOFFLOOR * (SIZEOFCORRIDOR / 2 - 1);
 	corridor->_lowerRightCornerPositionY = toBattleRoom->_centerY + HEIGHTOFFLOOR * (toBattleRoom->_sizeY / 2 + 1);
+	//CCLOG("H %d,%d", corridor->_topLeftCornerPositionX, corridor->_topLeftCornerPositionY);
 	corridor->createRoomMaping();
 	////确定小地图绘制顶点
 	//float downLeftX = miniMap->miniRoom[toRoom->x][toRoom->y]->downLeftX + 7;

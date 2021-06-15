@@ -5,7 +5,7 @@
 #include "battleRoom.h"
 #include "hero.h"
 
-class monster;
+//class monster;
 
 USING_NS_CC;
 
@@ -33,22 +33,22 @@ public:
 	void beginRoomGenerate(int column, int row);                            //完成生成的起点即初始房间的生成
 	void nextRoomGenerate(int column, int row, battleRoom* curRoom, std::queue<battleRoom*>& roomQueue);     //生成下一个房间
 	void connectRoom(battleRoom* curRoom);                                  //从初始房间开始用走廊联通房间
-
+	void initEnemy();                                                       //初始化生成怪物
 	void setRoomType();                                                     //设置关卡矩阵中被初始化的房间的类型
 
 	static Scene* createBattleScene();
 
 
-	void bindmonster(monster* mons);
+	//void bindmonster(monster* mons);
 
-	monster* getmonster();
+	//monster* getmonster();
 
 
 	bool onContactBegin(cocos2d::PhysicsContact& contact);
 
 	//更新类函数
-	void updateBattleScenePosition();                                                     //更新人物移动造成的画面位置变化
-
+	void updateBattleScenePosition();                                       //更新人物移动造成的画面位置变化
+	void updateRoomHeroLocated();
 
 	//
 	//
@@ -63,7 +63,7 @@ public:
 
 
 private:
-	monster* monsterforT;
+	//monster* monsterforT;
 	static int _battleSceneNumber;                                          //代表大关卡内的小场景编号
 	static int _battleSceneType;                                            //大关卡类型
 
@@ -78,6 +78,7 @@ private:
 	Vector<Sprite*> vecWall;
 	Vector<Sprite*> vecDoor;
 	Vector<room*> vecCorridor;
+	Vector<monster*>vecMonster;
 
 
 	int countForRoom;
