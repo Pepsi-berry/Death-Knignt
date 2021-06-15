@@ -2,7 +2,7 @@
 //#include "set_scene.h"
 
 hero* battleScene::Hero = nullptr;
-int battleScene::_battleSceneNumber = 0;
+int battleScene::_battleSceneNumber = 1;
 
 //void battleScene::bindmonster(monster* mons)
 //{
@@ -76,11 +76,43 @@ bool battleScene::init()
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(contactListener, this);
 
 	this->scheduleUpdate();
+	this->schedule(CC_SCHEDULE_SELECTOR(battleScene::updateMonsterAttack), 1.0f);
+
 	return true;
 }
 
 bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 {
+	//monster* monster1;
+	//bullet* bullet1;
+	//auto nodeA = contact.getShapeA()->getBody()->getNode();
+	//auto nodeB = contact.getShapeB()->getBody()->getNode();
+	//if (nodeA && nodeB)
+	//{
+	//	if (nodeB->getTag() == 2 && nodeA->getTag() == 1)
+	//	{
+	//		monster1 = dynamic_cast<monster*>(nodeB);
+	//		monster1->removeAllComponents();
+	//		monster1->dead();
+	//	}
+	//	else if (nodeA->getTag() == 2 && nodeB->getTag() == 1)
+	//	{
+	//		monster1 = dynamic_cast<monster*>(nodeA);
+	//		monster1->removeAllComponents();
+	//		monster1->dead();
+	//	}
+	//	//else if (nodeA->getTag() == 2 && nodeB->getTag() == 3)
+	//	//{
+	//	//	monster1 = dynamic_cast<monster*>(nodeA);
+	//	//	bullet1 = dynamic_cast<bullet*>(nodeB);
+	//	//	monster1->removeAllComponents();
+	//	//	monster1->dead();
+	//	//	bullet1->removeAllComponents();
+	//	//	bullet1->removeAllChildren();
+	//	//}
+	//}
+ //   return true;
+	hero* hero1;
 	monster* monster1;
 	bullet* bullet1;
 	auto nodeA = contact.getShapeA()->getBody()->getNode();
@@ -90,26 +122,34 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 		if (nodeB->getTag() == 2 && nodeA->getTag() == 1)
 		{
 			monster1 = dynamic_cast<monster*>(nodeB);
-			monster1->removeAllComponents();
-			monster1->dead();
+			hero1 = dynamic_cast<hero*>(nodeA);
+			if (monster1->canattack == true)
+				hero1->getdamage(monster1->getmydamage());
+			if (hero1->isdead())
+				hero1->removeAllComponents();
 		}
 		else if (nodeA->getTag() == 2 && nodeB->getTag() == 1)
 		{
 			monster1 = dynamic_cast<monster*>(nodeA);
-			monster1->removeAllComponents();
-			monster1->dead();
+			hero1 = dynamic_cast<hero*>(nodeB);
+			if (monster1->canattack == true)
+				hero1->getdamage(monster1->getmydamage());
+			if (hero1->isdead())
+				hero1->removeAllComponents();
 		}
-		//else if (nodeA->getTag() == 2 && nodeB->getTag() == 3)
-		//{
-		//	monster1 = dynamic_cast<monster*>(nodeA);
-		//	bullet1 = dynamic_cast<bullet*>(nodeB);
-		//	monster1->removeAllComponents();
-		//	monster1->dead();
-		//	bullet1->removeAllComponents();
-		//	bullet1->removeAllChildren();
-		//}
+		else if (nodeA->getTag() == 2 && nodeB->getTag() == 3)
+		{
+			monster1 = dynamic_cast<monster*>(nodeA);
+			bullet1 = dynamic_cast<bullet*>(nodeB);
+			monster1->getdamage(bullet1->getdamage());
+			if (monster1->isdead())
+			{
+				monster1->removeAllComponents();
+			}
+			bullet1->removeAllComponents();
+		}
 	}
-    return true;
+	return true;
 }
 
 void battleScene::initEnemy()
@@ -129,6 +169,7 @@ void battleScene::update(float delta)
 	updateRoomHeroLocated();
 	//updateBoundaryJudgement();
 	updateBattleScenePosition();
+	updateBattleRoomDoorState();
 
 }
 
@@ -171,9 +212,9 @@ void battleScene::updateRoomHeroLocated()
 			battleRoom* curBattleRoom = _battleRoomMatrix[y][x];
 			if (curBattleRoom == nullptr)
 				continue;
-			CCLOG("%d,%d", y, x);
-			CCLOG("heroPositionX %f,heroPositionY %f,_topLeftCornerPositionX %f,_topLeftCornerPositionY %f, _lowerRightCornerPositionX %f,_lowerRightCornerPositionY %f",
-				Hero->getPositionX(), Hero->getPositionY(), curBattleRoom->_topLeftCornerPositionX, curBattleRoom->_topLeftCornerPositionY, curBattleRoom->_lowerRightCornerPositionX, curBattleRoom->_lowerRightCornerPositionY);
+			//CCLOG("%d,%d", y, x);
+			//CCLOG("heroPositionX %f,heroPositionY %f,_topLeftCornerPositionX %f,_topLeftCornerPositionY %f, _lowerRightCornerPositionX %f,_lowerRightCornerPositionY %f",
+			//	Hero->getPositionX(), Hero->getPositionY(), curBattleRoom->_topLeftCornerPositionX, curBattleRoom->_topLeftCornerPositionY, curBattleRoom->_lowerRightCornerPositionX, curBattleRoom->_lowerRightCornerPositionY);
 			if (curBattleRoom->getIsAtRoom(Hero) == true)
 			{
 				Hero->setCurBattleRoom(curBattleRoom);
@@ -201,6 +242,56 @@ void battleScene::updateRoomHeroLocated()
 void battleScene::updateBoundaryJudgement()
 {
 
+}
+
+void battleScene::updateMonsterAttack(float delta)
+{
+	Vec2 curheropos = Hero->getPosition();
+	monster* nearMonster = nullptr;
+	if (this->Hero->getCurBattleRoom() != nullptr)
+	{
+		for (monster* curMonster : this->Hero->getCurBattleRoom()->getVecMonster())
+		{
+			if (!curMonster->isdead())
+			{
+				Vec2 enemyPos = curMonster->getPosition();
+				if (enemyPos.distance(curheropos) < 200)
+				{
+					//判定不会冲出房间时野猪发动冲撞
+					float Xmin = curMonster->getAtBattleRoom()->getTopLeftCornerPositionX();
+					float Ymin = curMonster->getAtBattleRoom()->getLowerRightCornerPositionY();
+					float Xmax = curMonster->getAtBattleRoom()->getLowerRightCornerPositionX();
+					float Ymax = curMonster->getAtBattleRoom()->getTopLeftCornerPositionY();
+
+					float dstX = (Hero->getPositionX() - curMonster->getPositionX()) * 3 + curMonster->getPositionX();
+					float dstY = (Hero->getPositionY() - curMonster->getPositionY()) * 3 + curMonster->getPositionY();
+					if (dstX >= Xmin && dstX <= Xmax && dstY >= Ymin && dstY <= Ymax)
+					{
+						curMonster->canattack = true;
+						Vec2 target = curheropos - curMonster->getPosition();
+						target.normalize();
+						target = target * 300;
+						auto moveby = MoveBy::create(1.0f, target);
+						curMonster->runAction(moveby);
+					}
+				}
+				else
+					curMonster->canattack = false;
+			}
+		}
+	}
+}
+
+void battleScene::updateBattleRoomDoorState()
+{
+	auto curBattleRoom = Hero->getCurBattleRoom();
+	if (curBattleRoom != nullptr)
+	{
+		if (curBattleRoom->getIsClearance())
+			curBattleRoom->setDoorOpened();
+		else
+			curBattleRoom->setDoorClosed();
+	}
 }
 
 void battleScene::nextRoomGenerate(int column, int row, battleRoom* curRoom, std::queue<battleRoom*>& roomQueue)

@@ -11,6 +11,7 @@ class battleRoom;
 
 class monster : public character {
 public:
+	bool canattack = false;
 	monster() = default;
 	~monster();
 	CREATE_FUNC(monster);
@@ -29,7 +30,10 @@ public:
 
 	void dead();
 
+	int getmydamage()const;
+
 private:
+	int _damage=2;
 	void setAttackRange();
 	int enemyType = 0;
 	int ATTACKRANGE;

@@ -1,7 +1,13 @@
 #include "monster.h"
+#include "battleRoom.h"
 
 monster::~monster() {}
 
+
+int monster::getmydamage()const
+{
+	return (this->_damage);
+}
 void monster::dead()
 {
 	this->setHP(-1);
@@ -9,7 +15,7 @@ void monster::dead()
 
 void monster::move(float delta)
 {
-	if (!this->isdead())
+	if (!this->isdead()&&!this->canattack)
 	{
 		auto moveby1 = MoveBy::create(1.0, Vec2(5 * _moveSpeed, 0));
 		auto moveby2 = MoveBy::create(1.0, Vec2(-5 * _moveSpeed, 0));
@@ -18,10 +24,16 @@ void monster::move(float delta)
 
 		auto winSize = Director::getInstance()->getVisibleSize();
 		Vec2 me_size = this->getContentSize();
-		int Xmin = me_size.x;
-		int Ymin = me_size.y;
-		int Xmax = winSize.width;
-		int Ymax = winSize.height;
+		//int Xmin = me_size.x;
+		//int Ymin = me_size.y;
+		//int Xmax = winSize.width;
+		//int Ymax = winSize.height;
+		float Xmin = this->getAtBattleRoom()->getTopLeftCornerPositionX();
+		float Ymin = this->getAtBattleRoom()->getLowerRightCornerPositionY();
+		float Xmax = this->getAtBattleRoom()->getLowerRightCornerPositionX();
+		float Ymax = this->getAtBattleRoom()->getTopLeftCornerPositionY();
+
+
 
 		int x, y;
 		x = this->getPositionX();

@@ -30,7 +30,7 @@ void battleRoom::generateDoorMaping(float positionX, float positionY, int layer)
 	Sprite* tempSprite = Sprite::create("Map//doorOpen.png");
 	this->addChild(tempSprite,  - 2);
 	tempSprite->setGlobalZOrder( - 2);
-	//vecDoorOpen.pushBack(tmpSprite);
+	vecDoorOpened.pushBack(tempSprite);
 
 	tempSprite->setPosition(Point(positionX, positionY));
 	tempSprite->setVisible(true);
@@ -38,7 +38,7 @@ void battleRoom::generateDoorMaping(float positionX, float positionY, int layer)
 	tempSprite = Sprite::create("Map//doorClose.png");
 	this->addChild(tempSprite, layer);
 	tempSprite->setGlobalZOrder(layer);
-	//vecDoorClose.pushBack(tmpSprite);
+	vecDoorClosed.pushBack(tempSprite);
 
 	tempSprite->setPosition(Point(positionX, positionY + HEIGHTOFFLOOR / 2));
 	tempSprite->setVisible(false);  // closeDoor images are not visible at first
@@ -109,12 +109,12 @@ void battleRoom::createBattleRoomMaping()
 		if (_battleRoomType == TypeEnd)
 		{  //设置房间大小以及传送门
 			_sizeX -= 2, _sizeY -= 2;
-			//Sprite* portal = Sprite::create("Map//portal3.png");
-			//portal->setPosition(Point(_centerX, _centerY));
-			//addChild(portal);
-			//portal->setGlobalZOrder(-1);
+			Sprite* portal = Sprite::create("Map//portal3.png");
+			portal->setPosition(Point(_centerX, _centerY));
+			addChild(portal);
+			portal->setGlobalZOrder(-1);
 
-			//this->portal = portal;
+			this->_portal = portal;
 		}
 	}
 	else if (_battleRoomType == TypeBoss)
@@ -196,6 +196,9 @@ void battleRoom::createBattleRoomMaping()
 	if (_battleRoomType == TypeBox)
 		createBox((_topLeftCornerPositionX + _lowerRightCornerPositionX) / 2, (_topLeftCornerPositionY + _lowerRightCornerPositionY) / 2);
 
+	if (_battleRoomType == TypeEnd)
+		;
+
 }
 
 bool battleRoom::createBattleRoom(battleRoom*& toBattleRoom, battleRoom* curBattleRoom, int direction, int toX, int toY)
@@ -220,30 +223,74 @@ bool battleRoom::createBattleRoom(battleRoom*& toBattleRoom, battleRoom* curBatt
 	return true;
 }
 
+void battleRoom::setDoorOpened() 
+{ 
+	for (auto spriteDoor : vecDoorOpened)
+		spriteDoor->setVisible(true);
+	for (auto spriteDoor : vecDoorClosed) 
+		spriteDoor->setVisible(false);
+}
+
+void battleRoom::setDoorClosed()
+{
+	for (auto spriteDoor : vecDoorClosed)
+		spriteDoor->setVisible(true);
+
+	for (auto spriteDoor : vecDoorOpened)
+		spriteDoor->setVisible(false);
+}
+
+bool battleRoom::getIsClearance()
+{
+	bool isClearance = true;
+	for (auto curMonster : this->getVecMonster())
+	{
+		if (!curMonster->isdead())
+		{
+			isClearance = false;
+			break;
+		}
+	}
+	return isClearance;
+}
+
 void battleRoom::checkBattleRoomBoundaryBarrier(hero* Hero)
 {
 	float heroPositionX = Hero->getPositionX();
 	float heroPositionY = Hero->getPositionY();
-
-	if (((_topLeftCornerPositionY + HEIGHTOFFLOOR / 2 - HEIGHTOFFLOOR * (_sizeY / 2 - 3)) >=
-		heroPositionY &&
-		heroPositionY >= (_lowerRightCornerPositionY + HEIGHTOFFLOOR * (_sizeY / 2 - 3))))
+	if (this->getIsClearance())
 	{
-		if (Hero->getmovespeedX() > 0 && heroPositionX >= _lowerRightCornerPositionX && !_visDirection[RIGHT])
-			//ispeedX = .0f;
-			Hero->setmovespeedX(.0f);
-		if (Hero->getmovespeedX() < 0 && heroPositionX <= _topLeftCornerPositionX && !_visDirection[LEFT])
-			Hero->setmovespeedX(.0f);
+		if (((_topLeftCornerPositionY + HEIGHTOFFLOOR / 2 - HEIGHTOFFLOOR * (_sizeY / 2 - 3)) >=
+			heroPositionY &&
+			heroPositionY >= (_lowerRightCornerPositionY + HEIGHTOFFLOOR * (_sizeY / 2 - 3))))
+		{
+			if (Hero->getmovespeedX() > 0 && heroPositionX >= _lowerRightCornerPositionX && !_visDirection[RIGHT])
+				//ispeedX = .0f;
+				Hero->setmovespeedX(.0f);
+			if (Hero->getmovespeedX() < 0 && heroPositionX <= _topLeftCornerPositionX && !_visDirection[LEFT])
+				Hero->setmovespeedX(.0f);
+		}
+		else if (_topLeftCornerPositionX + HEIGHTOFFLOOR * (_sizeY / 2 - 3) <= heroPositionX &&                     //??
+			heroPositionX <= _lowerRightCornerPositionX - HEIGHTOFFLOOR * (_sizeY / 2 - 3))
+		{
+			if (Hero->getmovespeedY() > 0 && heroPositionY >= _topLeftCornerPositionY + HEIGHTOFFLOOR / 2 && !_visDirection[UP])
+				Hero->setmovespeedY(.0f);
+			if (Hero->getmovespeedY() < 0 && heroPositionY <= _lowerRightCornerPositionY && !_visDirection[DOWN])
+				Hero->setmovespeedY(.0f);
+		}
+		else
+		{
+			if (Hero->getmovespeedX() > 0 && heroPositionX >= _lowerRightCornerPositionX)
+				Hero->setmovespeedX(.0f);
+			if (Hero->getmovespeedX() < 0 && heroPositionX <= _topLeftCornerPositionX)
+				Hero->setmovespeedX(.0f);
+			if (Hero->getmovespeedY() > 0 && heroPositionY >= _topLeftCornerPositionY + 20)
+				Hero->setmovespeedY(.0f);
+			if (Hero->getmovespeedY() < 0 && heroPositionY <= _lowerRightCornerPositionY)
+				Hero->setmovespeedY(.0f);
+		}
 	}
-	else if (_topLeftCornerPositionX + HEIGHTOFFLOOR * (_sizeY / 2 - 3) <= heroPositionX &&                     //??
-		heroPositionX <= _lowerRightCornerPositionX - HEIGHTOFFLOOR * (_sizeY / 2 - 3))
-	{
-		if (Hero->getmovespeedY() > 0 && heroPositionY >= _topLeftCornerPositionY + HEIGHTOFFLOOR / 2 && !_visDirection[UP])
-			Hero->setmovespeedY(.0f);
-		if (Hero->getmovespeedY() < 0 && heroPositionY <= _lowerRightCornerPositionY && !_visDirection[DOWN])
-			Hero->setmovespeedY(.0f);
-	}
-	else 
+	else
 	{
 		if (Hero->getmovespeedX() > 0 && heroPositionX >= _lowerRightCornerPositionX)
 			Hero->setmovespeedX(.0f);
@@ -253,6 +300,7 @@ void battleRoom::checkBattleRoomBoundaryBarrier(hero* Hero)
 			Hero->setmovespeedY(.0f);
 		if (Hero->getmovespeedY() < 0 && heroPositionY <= _lowerRightCornerPositionY)
 			Hero->setmovespeedY(.0f);
+
 	}
 }
 

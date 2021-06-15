@@ -60,128 +60,173 @@ void hero::falsekeycode(EventKeyboard::KeyCode keycode)
 
 void hero::updatekeyboard(float delta)
 {
-	auto listener = EventListenerKeyboard::create();
-	listener->onKeyPressed = [&](EventKeyboard::KeyCode code, Event*)
-	{
-		this->truekeycode(code);
-	};
 
-	listener->onKeyReleased = [=](EventKeyboard::KeyCode code, Event* event) {
-		this->falsekeycode(code);
-	};
-
-	auto right = EventKeyboard::KeyCode::KEY_D;
-	auto left = EventKeyboard::KeyCode::KEY_A;
-	auto up = EventKeyboard::KeyCode::KEY_W;
-	auto down = EventKeyboard::KeyCode::KEY_S;
-	auto shoot = EventKeyboard::KeyCode::KEY_J;
-
-	auto winSize = Director::getInstance()->getVisibleSize();
-	Vec2 me_size = this->getContentSize();
-	int Xmin = me_size.x;
-	int Ymin = me_size.y;
-	int Xmax = winSize.width;
-	int Ymax = winSize.height;
-
-	int x0 = this->getPositionX();
-	int y0 = this->getPositionY();
-
-	/*auto moveby1 = MoveBy::create(0.01, Vec2(_heroSpeed, 0));
-	auto moveby2 = MoveBy::create(0.01, Vec2(-_heroSpeed, 0));
-	auto moveby3 = MoveBy::create(0.01, Vec2(0, _heroSpeed));
-	auto moveby4 = MoveBy::create(0.01, Vec2(0, -_heroSpeed));*/
-
-	if (keyMap[right])
-	{
-		this->setmovespeedX(5);
-		int x = x0 + this->_heroSpeedX;
-		int y = y0;
-		if (x > Xmin - 5 && x < Xmax + 5 && y>Ymin - 5 && y < Ymax + 5)
+		auto listener = EventListenerKeyboard::create();
+		listener->onKeyPressed = [&](EventKeyboard::KeyCode code, Event*)
 		{
-			this->getSprite()->setFlippedX(false);
-			this->getSprite()->runAction(Frame_animation());
-			//this->setPosition(x, y);
+			if (!this->isdead())
+				this->truekeycode(code);
+			else
+				this->falsekeycode(code);
+		};
+
+		listener->onKeyReleased = [=](EventKeyboard::KeyCode code, Event* event) {
+			this->falsekeycode(code);
+		};
+
+		auto right = EventKeyboard::KeyCode::KEY_D;
+		auto left = EventKeyboard::KeyCode::KEY_A;
+		auto up = EventKeyboard::KeyCode::KEY_W;
+		auto down = EventKeyboard::KeyCode::KEY_S;
+		auto shoot = EventKeyboard::KeyCode::KEY_J;
+
+		auto winSize = Director::getInstance()->getVisibleSize();
+		Vec2 me_size = this->getContentSize();
+		int Xmin = me_size.x;
+		int Ymin = me_size.y;
+		int Xmax = winSize.width;
+		int Ymax = winSize.height;
+
+		int x0 = this->getPositionX();
+		int y0 = this->getPositionY();
+
+
+		if (this->isdead())
+		{
+			this->falsekeycode(right);
+			this->falsekeycode(left);
+			this->falsekeycode(up);
+			this->falsekeycode(down);
+			this->falsekeycode(shoot);
 		}
-	}
-	if (keyMap[left])
-	{
-		this->setmovespeedX(-5);
-		int x = x0 + this->_heroSpeedX;
-		int y = y0;
-		if (x > Xmin - 5 && x < Xmax + 5 && y>Ymin - 5 && y < Ymax + 5)
-		{
-			this->getSprite()->setFlippedX(true);
-			this->getSprite()->runAction(Frame_animation());
-			//this->setPosition(x, y);
-		}
-	}
-	if (!keyMap[left] && !keyMap[right])
-	{
-		this->setmovespeedX(0);
-	}
+		/*auto moveby1 = MoveBy::create(0.01, Vec2(_heroSpeed, 0));
+		auto moveby2 = MoveBy::create(0.01, Vec2(-_heroSpeed, 0));
+		auto moveby3 = MoveBy::create(0.01, Vec2(0, _heroSpeed));
+		auto moveby4 = MoveBy::create(0.01, Vec2(0, -_heroSpeed));*/
 
-	if (keyMap[up])
-	{
-		this->setmovespeedY(5);
-		int x = x0;
-		int y = y0 + this->_heroSpeedY;
-		if (x > Xmin - 5 && x < Xmax + 5 && y>Ymin - 5 && y < Ymax + 5)
+		if (keyMap[right]&& !this->isdead())
 		{
-			this->getSprite()->runAction(Frame_animation());
-			//this->setPosition(x, y);
-		}
-	}
-
-	if (keyMap[down])
-	{
-		this->setmovespeedY(-5);
-		int x = x0;
-		int y = y0 + this->_heroSpeedY;
-		if (x > Xmin - 5 && x < Xmax + 5 && y>Ymin - 5 && y < Ymax + 5)
-		{
-			this->getSprite()->runAction(Frame_animation());
-			//this->setPosition(x, y);
-		}
-	}
-	if (!keyMap[up] && !keyMap[down])
-	{
-		this->setmovespeedY(0);
-	}
-	//if (!keyMap[up] && !keyMap[down] && !keyMap[left] && !keyMap[right])
-	//{
-	//	getSprite()->stopAllActions();
-	//}
-
-	if(keyMap[shoot])
-		if (this->getCurBattleRoom() != nullptr)
-		{
-			CCLOG("X%d,Y%d", this->getCurBattleRoom()->getColumnNum(), this->getCurBattleRoom()->getRowNum());
-			if (this->getCurBattleRoom()->getBattleRoomType() == TypeNormal)
+			this->setmovespeedX(5);
+			int x = x0 + this->_heroSpeedX;
+			int y = y0;
+			if (x > Xmin - 5 && x < Xmax + 5 && y>Ymin - 5 && y < Ymax + 5)
 			{
-				auto Bullet = bullet::create();
-				monster* nearMonster = nullptr;
-				Vec2 curPos = this->getPosition();
-				float distance = 99999;
-				int set_x = this->getContentSize().width/2;
-				int set_y = this->getContentSize().height/2;
-				Bullet->setPosition(set_x, set_y);
-				this->addChild(Bullet);
-				for (monster* curMonster : this->getCurBattleRoom()->getVecMonster())
-				{
-					Vec2 enemyPos = curMonster->getPosition();
-					if (enemyPos.distance(curPos) < distance) 
-					{
-						nearMonster = curMonster;
-						distance = enemyPos.distance(curPos);
-					}
-				}
-				Vec2 target = nearMonster->getPosition() - curPos;
-				auto moveby = MoveBy::create(0.1f, target*3);
-				Bullet->runAction(moveby);
+				this->getSprite()->setFlippedX(false);
+				this->getSprite()->runAction(Frame_animation());
+				//this->setPosition(x, y);
+			}
+		}
+		if (keyMap[left]&& !this->isdead())
+		{
+			this->setmovespeedX(-5);
+			int x = x0 + this->_heroSpeedX;
+			int y = y0;
+			if (x > Xmin - 5 && x < Xmax + 5 && y>Ymin - 5 && y < Ymax + 5)
+			{
+				this->getSprite()->setFlippedX(true);
+				this->getSprite()->runAction(Frame_animation());
+				//this->setPosition(x, y);
+			}
+		}
+		if (!keyMap[left] && !keyMap[right]&& !this->isdead())
+		{
+			this->setmovespeedX(0);
+		}
+
+		if (keyMap[up]&& !this->isdead())
+		{
+			this->setmovespeedY(5);
+			int x = x0;
+			int y = y0 + this->_heroSpeedY;
+			if (x > Xmin - 5 && x < Xmax + 5 && y>Ymin - 5 && y < Ymax + 5)
+			{
+				this->getSprite()->runAction(Frame_animation());
+				//this->setPosition(x, y);
 			}
 		}
 
-	_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+		if (keyMap[down]&& !this->isdead())
+		{
+			this->setmovespeedY(-5);
+			int x = x0;
+			int y = y0 + this->_heroSpeedY;
+			if (x > Xmin - 5 && x < Xmax + 5 && y>Ymin - 5 && y < Ymax + 5)
+			{
+				this->getSprite()->runAction(Frame_animation());
+				//this->setPosition(x, y);
+			}
+		}
+		if (!keyMap[up] && !keyMap[down]&& !this->isdead())
+		{
+			this->setmovespeedY(0);
+		}
+		//if (!keyMap[up] && !keyMap[down] && !keyMap[left] && !keyMap[right])
+		//{
+		//	getSprite()->stopAllActions();
+		//}
+
+		if (this->getCurBattleRoom() != nullptr)
+			if (keyMap[shoot])
+			{
+				//CCLOG("X%d,Y%d", this->getCurBattleRoom()->getColumnNum(), this->getCurBattleRoom()->getRowNum());
+				if (this->getCurBattleRoom()->getBattleRoomType() == TypeNormal)
+				{
+					//auto Bullet = bullet::create();
+					//PhysicsBody* bulletbody = PhysicsBody::createBox(Bullet->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+					//bulletbody->setGravityEnable(false);
+					//bulletbody->setDynamic(false);
+					//bulletbody->setCategoryBitmask(0x0001);
+					//bulletbody->setCollisionBitmask(0x0001);
+					//bulletbody->setContactTestBitmask(0x0001);
+					//Bullet->addComponent(bulletbody);
+					//Bullet->setTag(3);
+					monster* nearMonster = nullptr;
+					Vec2 curPos = this->getPosition();
+					float distance = 99999;
+					int set_x = this->getContentSize().width / 2;
+					int set_y = this->getContentSize().height / 2;
+					//Bullet->setPosition(set_x, set_y);
+					//this->addChild(Bullet);
+					for (monster* curMonster : this->getCurBattleRoom()->getVecMonster())
+					{
+						if (!curMonster->isdead())
+						{
+							Vec2 enemyPos = curMonster->getPosition();
+							if (enemyPos.distance(curPos) < distance)
+							{
+								nearMonster = curMonster;
+								distance = enemyPos.distance(curPos);
+							}
+						}
+					}
+					if (nearMonster != nullptr)
+					{
+						auto Bullet = bullet::create();
+						PhysicsBody* bulletbody = PhysicsBody::createBox(Bullet->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+						bulletbody->setGravityEnable(false);
+						bulletbody->setDynamic(false);
+						bulletbody->setCategoryBitmask(0x0001);
+						bulletbody->setCollisionBitmask(0x0001);
+						bulletbody->setContactTestBitmask(0x0001);
+						Bullet->addComponent(bulletbody);
+						Bullet->setTag(3);
+						Bullet->setPosition(set_x, set_y);
+						this->addChild(Bullet);
+
+						Vec2 target = nearMonster->getPosition() - curPos;
+						auto moveby = MoveBy::create(0.7f, target * 2);
+						auto actionRemove = RemoveSelf::create();
+						Bullet->runAction(Sequence::create(moveby, actionRemove, nullptr));
+					}
+					//else
+					//{
+					//	auto actionRemove = RemoveSelf::create();
+					//	Bullet->runAction(actionRemove);
+					//}
+				}
+			}
+
+		_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 }
 
 int hero::getArmor() const { return this->_armor; }

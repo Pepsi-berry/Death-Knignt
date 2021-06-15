@@ -58,7 +58,7 @@ protected:
 	battleRoom* _curBattleRoom;
 	room* _curCorridor;
 
-	int _armor;
+	int _armor=0;
 	int _armorMax;
 };
 #endif

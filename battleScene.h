@@ -50,6 +50,8 @@ public:
 	void updateBattleScenePosition();                                       //更新人物移动造成的画面位置变化
 	void updateRoomHeroLocated();                                           //更新英雄所处房间(_curBattleRoom或_curCorridor)
 	void updateBoundaryJudgement();                                         //更新,进行边界判定
+	void updateMonsterAttack(float delta);                                  //更新怪物攻击
+	void updateBattleRoomDoorState();                                       //更新battleRoom门的开关
 
 	//
 	//

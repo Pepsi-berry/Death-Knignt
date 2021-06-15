@@ -14,6 +14,8 @@ public:
 	~bullet();
 	CREATE_FUNC(bullet);
 
+	int getdamage()const;
+
 	void bindSprite(Sprite* bulletSprite);
 	Sprite* getSprite()const;
 
@@ -30,6 +32,7 @@ public:
 	virtual bool init();
 
 protected:
+	int _damage = 3;
 	Sprite* s_bullet;
 	hero* t_hero;
 	Scene* t_battleScene;

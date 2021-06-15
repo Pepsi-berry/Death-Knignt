@@ -2,6 +2,11 @@
 
 bullet::~bullet() {}
 
+int bullet::getdamage()const
+{
+	return this->_damage;
+}
+
 void bullet::bindSprite(Sprite* bulletSprite)
 {
 	this->s_bullet = bulletSprite;
@@ -54,13 +59,5 @@ bool bullet::init()
 {
 	auto t_bullet = Sprite::create("Bullet//bigBullet.png");
 	bindSprite(t_bullet);
-	//PhysicsBody* bulletbody = PhysicsBody::createBox(this->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
-	//bulletbody->setGravityEnable(false);
-	//bulletbody->setDynamic(false);
-	//bulletbody->setCategoryBitmask(0x0001);
-	//bulletbody->setCollisionBitmask(0x0001);
-	//bulletbody->setContactTestBitmask(0x0001);
-	//this->addComponent(bulletbody);
-	//this->setTag(3);
 	return true;
 }

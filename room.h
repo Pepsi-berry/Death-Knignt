@@ -22,9 +22,24 @@ public:
 	void generateWallMaping(float positionX,float positionY,int layer);
 
 	void setCenter(float centerX, float centerY) { _centerX = centerX, _centerY = centerY; }
+	void setTopLeftCornerPosition(float topLeftCornerPositionX, float topLeftCornerPositionY) 
+	{ 
+		_topLeftCornerPositionX = topLeftCornerPositionX; 
+		_topLeftCornerPositionY = topLeftCornerPositionY;
+	}
+	void setLowerRightCornerPosition(float lowerRightCornerPositionX, float lowerRightCornerPositionY)
+	{
+		_lowerRightCornerPositionX = lowerRightCornerPositionX;
+		_lowerRightCornerPositionY = lowerRightCornerPositionY;
+	}
+
 
 	float getCenterX() { return _centerX; }
 	float getCenterY() { return _centerY; }
+	float getTopLeftCornerPositionX() { return _topLeftCornerPositionX; }
+	float getTopLeftCornerPositionY() { return _topLeftCornerPositionY; }
+	float getLowerRightCornerPositionX() { return _lowerRightCornerPositionX; }
+	float getLowerRightCornerPositionY() { return _lowerRightCornerPositionY; }
 
 	bool getIsAtRoom(hero* Hero);
 
