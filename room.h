@@ -28,9 +28,11 @@ public:
 
 	bool getIsAtRoom(hero* Hero);
 
-	void createRoomMaping();                //调用函数添加子节点生成较完备房间贴图
+	void createRoomMaping();                                //调用函数添加子节点生成较完备房间贴图
 
 	void moveRoomPosition(float mvSpeedX,float mvSpeedY);   //移动房间位置以更新画面
+
+	void checkCorridorBoundaryBarrier(hero* Hero);
 
 protected:
 	float _centerX, _centerY;               //代表房间中心点坐标

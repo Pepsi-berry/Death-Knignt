@@ -219,6 +219,43 @@ bool battleRoom::createBattleRoom(battleRoom*& toBattleRoom, battleRoom* curBatt
 	toBattleRoom->_visDirection[(direction + 2) % 4] = true;
 	return true;
 }
+
+void battleRoom::checkBattleRoomBoundaryBarrier(hero* Hero)
+{
+	float heroPositionX = Hero->getPositionX();
+	float heroPositionY = Hero->getPositionY();
+
+	if (((_topLeftCornerPositionY + HEIGHTOFFLOOR / 2 - HEIGHTOFFLOOR * (_sizeY / 2 - 3)) >=
+		heroPositionY &&
+		heroPositionY >= (_lowerRightCornerPositionY + HEIGHTOFFLOOR * (_sizeY / 2 - 3))))
+	{
+		if (Hero->getmovespeedX() > 0 && heroPositionX >= _lowerRightCornerPositionX && !_visDirection[RIGHT])
+			//ispeedX = .0f;
+			Hero->setmovespeedX(.0f);
+		if (Hero->getmovespeedX() < 0 && heroPositionX <= _topLeftCornerPositionX && !_visDirection[LEFT])
+			Hero->setmovespeedX(.0f);
+	}
+	else if (_topLeftCornerPositionX + HEIGHTOFFLOOR * (_sizeY / 2 - 3) <= heroPositionX &&                     //??
+		heroPositionX <= _lowerRightCornerPositionX - HEIGHTOFFLOOR * (_sizeY / 2 - 3))
+	{
+		if (Hero->getmovespeedY() > 0 && heroPositionY >= _topLeftCornerPositionY + HEIGHTOFFLOOR / 2 && !_visDirection[UP])
+			Hero->setmovespeedY(.0f);
+		if (Hero->getmovespeedY() < 0 && heroPositionY <= _lowerRightCornerPositionY && !_visDirection[DOWN])
+			Hero->setmovespeedY(.0f);
+	}
+	else 
+	{
+		if (Hero->getmovespeedX() > 0 && heroPositionX >= _lowerRightCornerPositionX)
+			Hero->setmovespeedX(.0f);
+		if (Hero->getmovespeedX() < 0 && heroPositionX <= _topLeftCornerPositionX)
+			Hero->setmovespeedX(.0f);
+		if (Hero->getmovespeedY() > 0 && heroPositionY >= _topLeftCornerPositionY + 20)
+			Hero->setmovespeedY(.0f);
+		if (Hero->getmovespeedY() < 0 && heroPositionY <= _lowerRightCornerPositionY)
+			Hero->setmovespeedY(.0f);
+	}
+}
+
 //
 //bool battleRoom::getIsAtBattleRoom(hero* Hero)
 //{

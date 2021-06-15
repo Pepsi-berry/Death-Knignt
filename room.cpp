@@ -27,6 +27,40 @@ bool room::getIsAtRoom(hero* Hero)
 	return false;
 }
 
+void room::checkCorridorBoundaryBarrier(hero* Hero)
+{
+	float heroPositionX = Hero->getPositionX();
+	float heroPositionY = Hero->getPositionY();
+
+	if (_direction % 2 == 1) {
+		if (heroPositionX >= _topLeftCornerPositionX - WIDTHOFFLOOR && heroPositionX <= _lowerRightCornerPositionX + WIDTHOFFLOOR &&
+			heroPositionY <= _topLeftCornerPositionY + HEIGHTOFFLOOR + 30 &&
+			heroPositionY >= _lowerRightCornerPositionY - HEIGHTOFFLOOR - 15) {
+			if (Hero->getmovespeedX() > 0 && heroPositionX >= _lowerRightCornerPositionX)
+				Hero->setmovespeedX(.0f);
+			else if (Hero->getmovespeedX() < 0 && heroPositionX <= _topLeftCornerPositionX)
+				Hero->setmovespeedX(.0f);
+		}
+	}
+	else {
+		if (heroPositionX >= _topLeftCornerPositionX - WIDTHOFFLOOR - 30 &&
+			heroPositionX <= _lowerRightCornerPositionX + WIDTHOFFLOOR + 30 &&
+			heroPositionY <= _topLeftCornerPositionY + HEIGHTOFFLOOR &&
+			heroPositionY >= _lowerRightCornerPositionY - HEIGHTOFFLOOR) {
+			if (Hero->getmovespeedY() > 0 && heroPositionY >= _topLeftCornerPositionY + HEIGHTOFFLOOR / 2)
+				Hero->setmovespeedY(.0f);
+			else if (Hero->getmovespeedY() < 0 && heroPositionY <= _lowerRightCornerPositionY)
+				Hero->setmovespeedY(.0f);
+		}
+	}
+
+	//if (knightX > upLeftX - FLOORWIDTH && knightX < downRightX + FLOORWIDTH &&
+	//	knightY < upLeftY + FLOORHEIGHT && knightY > downRightY - FLOORHEIGHT)
+	//	return true;
+	//return false;
+
+}
+
 void room::moveRoomPosition(float mvSpeedX,float mvSpeedY)
 {
 	_topLeftCornerPositionX += mvSpeedX;

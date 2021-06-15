@@ -27,7 +27,7 @@ public:
 	void setIsAtBattleRoom(bool isAtBattleRoom) { _isAtBattleRoom = isAtBattleRoom; }
 	void setBattleRoomType(int battleRoomType) { _battleRoomType = battleRoomType; }
 	//bool checkIsAtBattleRoom();
-	void setBoundaryBarrier(hero* Hero);
+	void checkBattleRoomBoundaryBarrier(hero* Hero);
 
 	int getRowNum() { return _rowNum; }
 	int getColumnNum() { return _columnNum; }

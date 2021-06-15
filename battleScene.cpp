@@ -127,12 +127,20 @@ void battleScene::initEnemy()
 void battleScene::update(float delta)
 {
 	updateRoomHeroLocated();
+	//updateBoundaryJudgement();
 	updateBattleScenePosition();
+
 }
 
 //暂时只包括视野移动
 void battleScene::updateBattleScenePosition()
 {
+
+	//updateBoundaryJudgement();
+	if (Hero->getCurBattleRoom() != nullptr)
+		Hero->getCurBattleRoom()->checkBattleRoomBoundaryBarrier(Hero);
+	else
+		Hero->getCurCorridor()->checkCorridorBoundaryBarrier(Hero);
 	float mvSpeedX = Hero->getmovespeedX();
 	float mvSpeedY = Hero->getmovespeedY();
 
@@ -188,6 +196,11 @@ void battleScene::updateRoomHeroLocated()
 			Hero->setCurCorridor(curCorridor);
 		}
 	}
+}
+
+void battleScene::updateBoundaryJudgement()
+{
+
 }
 
 void battleScene::nextRoomGenerate(int column, int row, battleRoom* curRoom, std::queue<battleRoom*>& roomQueue)
