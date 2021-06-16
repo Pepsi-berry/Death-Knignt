@@ -43,6 +43,7 @@ void hero::initmem(float speed, int armormax, int hpmax)
 bool hero::init()
 {
 	auto spritehero = Sprite::create("Character//knight.png");
+	this->_isFinished = false;
 	bindSprite(spritehero);
 	this->schedule(CC_SCHEDULE_SELECTOR(hero::updatekeyboard),0.01f);
 	return true;
@@ -168,61 +169,67 @@ void hero::updatekeyboard(float delta)
 		if (this->getCurBattleRoom() != nullptr)
 			if (keyMap[shoot])
 			{
+				auto curBattleRoom = this->getCurBattleRoom();
 				//CCLOG("X%d,Y%d", this->getCurBattleRoom()->getColumnNum(), this->getCurBattleRoom()->getRowNum());
-				if (this->getCurBattleRoom()->getBattleRoomType() == TypeNormal)
-				{
-					//auto Bullet = bullet::create();
-					//PhysicsBody* bulletbody = PhysicsBody::createBox(Bullet->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
-					//bulletbody->setGravityEnable(false);
-					//bulletbody->setDynamic(false);
-					//bulletbody->setCategoryBitmask(0x0001);
-					//bulletbody->setCollisionBitmask(0x0001);
-					//bulletbody->setContactTestBitmask(0x0001);
-					//Bullet->addComponent(bulletbody);
-					//Bullet->setTag(3);
-					monster* nearMonster = nullptr;
-					Vec2 curPos = this->getPosition();
-					float distance = 99999;
-					int set_x = this->getContentSize().width / 2;
-					int set_y = this->getContentSize().height / 2;
-					//Bullet->setPosition(set_x, set_y);
-					//this->addChild(Bullet);
-					for (monster* curMonster : this->getCurBattleRoom()->getVecMonster())
+				if(!(curBattleRoom->checkPortalPosition(this)))
+
+					if (curBattleRoom->getBattleRoomType() == TypeNormal)
 					{
-						if (!curMonster->isdead())
+						//auto Bullet = bullet::create();
+						//PhysicsBody* bulletbody = PhysicsBody::createBox(Bullet->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+						//bulletbody->setGravityEnable(false);
+						//bulletbody->setDynamic(false);
+						//bulletbody->setCategoryBitmask(0x0001);
+						//bulletbody->setCollisionBitmask(0x0001);
+						//bulletbody->setContactTestBitmask(0x0001);
+						//Bullet->addComponent(bulletbody);
+						//Bullet->setTag(3);
+						monster* nearMonster = nullptr;
+						Vec2 curPos = this->getPosition();
+						float distance = 99999;
+						int set_x = this->getContentSize().width / 2;
+						int set_y = this->getContentSize().height / 2;
+						//Bullet->setPosition(set_x, set_y);
+						//this->addChild(Bullet);
+						for (monster* curMonster : this->getCurBattleRoom()->getVecMonster())
 						{
-							Vec2 enemyPos = curMonster->getPosition();
-							if (enemyPos.distance(curPos) < distance)
+							if (!curMonster->isdead())
 							{
-								nearMonster = curMonster;
-								distance = enemyPos.distance(curPos);
+								Vec2 enemyPos = curMonster->getPosition();
+								if (enemyPos.distance(curPos) < distance)
+								{
+									nearMonster = curMonster;
+									distance = enemyPos.distance(curPos);
+								}
 							}
 						}
+						if (nearMonster != nullptr)
+						{
+							auto Bullet = bullet::create();
+							PhysicsBody* bulletbody = PhysicsBody::createBox(Bullet->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+							bulletbody->setGravityEnable(false);
+							bulletbody->setDynamic(false);
+							bulletbody->setCategoryBitmask(0x0001);
+							bulletbody->setCollisionBitmask(0x0001);
+							bulletbody->setContactTestBitmask(0x0001);
+							Bullet->addComponent(bulletbody);
+							Bullet->setTag(3);
+							Bullet->setPosition(set_x, set_y);
+							this->addChild(Bullet);
+							Vec2 target = nearMonster->getPosition() - curPos;
+							auto moveby = MoveBy::create(0.7f, target * 2);
+							auto actionRemove = RemoveSelf::create();
+							Bullet->runAction(Sequence::create(moveby, actionRemove, nullptr));
+						}
+						//else
+						//{
+						//	auto actionRemove = RemoveSelf::create();
+						//	Bullet->runAction(actionRemove);
+						//}
 					}
-					if (nearMonster != nullptr)
-					{
-						auto Bullet = bullet::create();
-						PhysicsBody* bulletbody = PhysicsBody::createBox(Bullet->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
-						bulletbody->setGravityEnable(false);
-						bulletbody->setDynamic(false);
-						bulletbody->setCategoryBitmask(0x0001);
-						bulletbody->setCollisionBitmask(0x0001);
-						bulletbody->setContactTestBitmask(0x0001);
-						Bullet->addComponent(bulletbody);
-						Bullet->setTag(3);
-						Bullet->setPosition(set_x, set_y);
-						this->addChild(Bullet);
-
-						Vec2 target = nearMonster->getPosition() - curPos;
-						auto moveby = MoveBy::create(0.7f, target * 2);
-						auto actionRemove = RemoveSelf::create();
-						Bullet->runAction(Sequence::create(moveby, actionRemove, nullptr));
-					}
-					//else
-					//{
-					//	auto actionRemove = RemoveSelf::create();
-					//	Bullet->runAction(actionRemove);
-					//}
+				if (curBattleRoom->getBattleRoomType() == TypeBox)
+				{
+					curBattleRoom->openChest(this);
 				}
 			}
 
@@ -239,9 +246,7 @@ void hero::setMaxArmor(int maxarmor) { this->_armorMax = maxarmor; }
 	
 void hero::getdamage(int damage)
 {
-	this->_armor -= damage;
-	if (this->_armor < 0)
-		(this->_HP) += _armor;
+		this->_HP -= damage;
 }
 
 void hero::setmovespeedX(float spd)

@@ -15,6 +15,7 @@ bool battleRoom::init()
 	_sizeX = SIZEOFROOM;
 	_sizeY = SIZEOFROOM;
 	_battleRoomType = TypeNormal;
+	_portal = nullptr;
 
 	this->scheduleUpdate();
 	return true;
@@ -303,6 +304,42 @@ void battleRoom::checkBattleRoomBoundaryBarrier(hero* Hero)
 
 	}
 }
+
+bool battleRoom::checkPortalPosition(hero* Hero)
+{
+	if (_portal != nullptr && _portal->getPosition().getDistance(Hero->getPosition()) < 30.0f)
+	{
+		Hero->setIsFinished(true);
+		return true;
+	}
+	else
+		return false;
+}
+
+Sprite* battleRoom::checkNearbyChest(hero* Hero)
+{
+	for (auto curChest : _vecBox)
+	{
+		Rect chestRect = curChest->getBoundingBox();
+		Rect heroRect = Hero->getBoundingBox();
+		if (chestRect.intersectsRect(heroRect)) 
+			return curChest;
+	}
+	return nullptr;
+}
+
+void battleRoom::openChest(hero* Hero)
+{
+	auto curChest = checkNearbyChest(Hero);
+	if (curChest != nullptr)
+	{
+		auto randdrop = drop::create();
+		randdrop->setPosition(curChest->getPosition());
+		this->addChild(randdrop);
+	}
+
+}
+
 
 //
 //bool battleRoom::getIsAtBattleRoom(hero* Hero)

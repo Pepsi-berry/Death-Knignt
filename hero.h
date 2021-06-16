@@ -43,6 +43,9 @@ public:
 	void setCurCorridor(room* curCorridor) { _curCorridor = curCorridor; }
 	room* getCurCorridor() { return _curCorridor; }
 
+	void setIsFinished(bool isFinished) { _isFinished = isFinished; }
+	bool getIsFinished() { return _isFinished; }
+
 	virtual void getdamage(int damage);
 
 	void initmem(float speed, int armormax, int hpmax);
@@ -60,5 +63,6 @@ protected:
 
 	int _armor=0;
 	int _armorMax;
+	bool _isFinished;
 };
 #endif

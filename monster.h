@@ -32,10 +32,15 @@ public:
 
 	int getmydamage()const;
 
+	void settype();
+	int gettype()const;
+
+	void setAttackRange();
+	int getAttackRange()const;
+
 private:
 	int _damage=2;
-	void setAttackRange();
-	int enemyType = 0;
+	int enemyType ;
 	int ATTACKRANGE;
 	bool isAdded;  
 protected:

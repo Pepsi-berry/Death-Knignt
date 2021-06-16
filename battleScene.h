@@ -4,6 +4,7 @@
 #include "cocos2d.h"
 #include "battleRoom.h"
 #include "hero.h"
+#include "drop.h"
 
 //class monster;
 
@@ -52,6 +53,7 @@ public:
 	void updateBoundaryJudgement();                                         //更新,进行边界判定
 	void updateMonsterAttack(float delta);                                  //更新怪物攻击
 	void updateBattleRoomDoorState();                                       //更新battleRoom门的开关
+	void updatePortalJudgement();                                           //更新对传送门以及切场景的判定
 
 	//
 	//

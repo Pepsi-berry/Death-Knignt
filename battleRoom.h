@@ -28,6 +28,9 @@ public:
 	void setBattleRoomType(int battleRoomType) { _battleRoomType = battleRoomType; }
 	//bool checkIsAtBattleRoom();
 	void checkBattleRoomBoundaryBarrier(hero* Hero);
+	bool checkPortalPosition(hero* Hero);
+	Sprite* checkNearbyChest(hero* Hero);
+	void openChest(hero* Hero);
 
 	int getRowNum() { return _rowNum; }
 	int getColumnNum() { return _columnNum; }

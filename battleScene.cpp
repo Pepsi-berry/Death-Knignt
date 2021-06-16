@@ -1,4 +1,5 @@
 #include "battleScene.h"
+#include <cmath>
 //#include "set_scene.h"
 
 hero* battleScene::Hero = nullptr;
@@ -115,6 +116,7 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 	hero* hero1;
 	monster* monster1;
 	bullet* bullet1;
+	Sprite* arrow1;
 	auto nodeA = contact.getShapeA()->getBody()->getNode();
 	auto nodeB = contact.getShapeB()->getBody()->getNode();
 	if (nodeA && nodeB)
@@ -144,9 +146,70 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 			monster1->getdamage(bullet1->getdamage());
 			if (monster1->isdead())
 			{
+				auto randdrop = drop::create();
+				//
+				PhysicsBody* dropbody = PhysicsBody::createBox(randdrop->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+				dropbody->setGravityEnable(false);
+				dropbody->setDynamic(false);
+				dropbody->setCategoryBitmask(0x0001);
+				dropbody->setCollisionBitmask(0x0001);
+				dropbody->setContactTestBitmask(0x0001);
+				randdrop->addComponent(dropbody);
+				randdrop->setTag(5);
+				//
+				randdrop->setPosition(monster1->getPosition());
+				Hero->getCurBattleRoom()->addChild(randdrop);
 				monster1->removeAllComponents();
 			}
 			bullet1->removeAllComponents();
+		}
+		else if (nodeA->getTag() == 3 && nodeB->getTag() == 2)
+		{
+			monster1 = dynamic_cast<monster*>(nodeB);
+			bullet1 = dynamic_cast<bullet*>(nodeA);
+			monster1->getdamage(bullet1->getdamage());
+			if (monster1->isdead())
+			{
+				auto randdrop = drop::create();
+				//
+				PhysicsBody* dropbody = PhysicsBody::createBox(randdrop->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+				dropbody->setGravityEnable(false);
+				dropbody->setDynamic(false);
+				dropbody->setCategoryBitmask(0x0001);
+				dropbody->setCollisionBitmask(0x0001);
+				dropbody->setContactTestBitmask(0x0001);
+				randdrop->addComponent(dropbody);
+				randdrop->setTag(5);
+				//
+				CCLOG("XX%f YY%f", monster1->getPositionX(), monster1->getPositionY());
+				randdrop->setPosition(monster1->getPositionX(), monster1->getPositionY());
+				CCLOG("XX%f YY%f", randdrop->getPositionX(), randdrop->getPositionY());
+				Hero->getCurBattleRoom()->addChild(randdrop);
+				monster1->removeAllComponents();
+			}
+			bullet1->removeAllComponents();
+		}
+		else if (nodeA->getTag() == 1 && nodeB->getTag() == 4)
+		{
+			hero1 = dynamic_cast<hero*>(nodeA);
+			arrow1 = dynamic_cast<Sprite*>(nodeB);
+			hero1->getdamage(1);
+			if (hero1->isdead())
+				hero1->removeAllComponents();
+			arrow1->removeAllComponents();
+			auto actionRemove = RemoveSelf::create();
+			arrow1->runAction(actionRemove);
+		}
+		else if (nodeA->getTag() == 4 && nodeB->getTag() == 1)
+		{
+			hero1 = dynamic_cast<hero*>(nodeB);
+			arrow1 = dynamic_cast<Sprite*>(nodeA);
+			hero1->getdamage(1);
+			if (hero1->isdead())
+				hero1->removeAllComponents();
+			arrow1->removeAllComponents();
+			auto actionRemove = RemoveSelf::create();
+			arrow1->runAction(actionRemove);
 		}
 	}
 	return true;
@@ -170,6 +233,7 @@ void battleScene::update(float delta)
 	//updateBoundaryJudgement();
 	updateBattleScenePosition();
 	updateBattleRoomDoorState();
+	updatePortalJudgement();
 
 }
 
@@ -182,6 +246,12 @@ void battleScene::updateBattleScenePosition()
 		Hero->getCurBattleRoom()->checkBattleRoomBoundaryBarrier(Hero);
 	else
 		Hero->getCurCorridor()->checkCorridorBoundaryBarrier(Hero);
+
+	if (Hero->isdead())
+	{
+		Hero->setmovespeedX(0);
+		Hero->setmovespeedY(0);
+	}
 	float mvSpeedX = Hero->getmovespeedX();
 	float mvSpeedY = Hero->getmovespeedY();
 
@@ -241,7 +311,7 @@ void battleScene::updateRoomHeroLocated()
 
 void battleScene::updateBoundaryJudgement()
 {
-
+	;
 }
 
 void battleScene::updateMonsterAttack(float delta)
@@ -254,29 +324,100 @@ void battleScene::updateMonsterAttack(float delta)
 		{
 			if (!curMonster->isdead())
 			{
-				Vec2 enemyPos = curMonster->getPosition();
-				if (enemyPos.distance(curheropos) < 200)
+				int curMonsterType = curMonster->gettype();
+				if (curMonsterType == 0)
 				{
-					//判定不会冲出房间时野猪发动冲撞
-					float Xmin = curMonster->getAtBattleRoom()->getTopLeftCornerPositionX();
-					float Ymin = curMonster->getAtBattleRoom()->getLowerRightCornerPositionY();
-					float Xmax = curMonster->getAtBattleRoom()->getLowerRightCornerPositionX();
-					float Ymax = curMonster->getAtBattleRoom()->getTopLeftCornerPositionY();
-
-					float dstX = (Hero->getPositionX() - curMonster->getPositionX()) * 3 + curMonster->getPositionX();
-					float dstY = (Hero->getPositionY() - curMonster->getPositionY()) * 3 + curMonster->getPositionY();
-					if (dstX >= Xmin && dstX <= Xmax && dstY >= Ymin && dstY <= Ymax)
+					if (!Hero->isdead())
 					{
-						curMonster->canattack = true;
-						Vec2 target = curheropos - curMonster->getPosition();
-						target.normalize();
-						target = target * 300;
-						auto moveby = MoveBy::create(1.0f, target);
-						curMonster->runAction(moveby);
+						Vec2 enemyPos = curMonster->getPosition();
+						if (enemyPos.distance(curheropos) < curMonster->getAttackRange())
+						{
+							//判定不会冲出房间时野猪发动冲撞
+							float Xmin = curMonster->getAtBattleRoom()->getTopLeftCornerPositionX();
+							float Ymin = curMonster->getAtBattleRoom()->getLowerRightCornerPositionY();
+							float Xmax = curMonster->getAtBattleRoom()->getLowerRightCornerPositionX();
+							float Ymax = curMonster->getAtBattleRoom()->getTopLeftCornerPositionY();
+
+
+
+							float dstX;
+							float dstY;
+							float delat_x = Hero->getPositionX() - curMonster->getPositionX();
+							float delat_y = Hero->getPositionY() - curMonster->getPositionY();
+							if (delat_x != 0)
+							{
+								float tan = abs(delat_y / delat_x);
+								float t_2 = tan * tan;
+								float squr = 1 + t_2;
+								float length = sqrt(squr);
+								if (delat_x > 0)
+									dstX = 200 / length;
+								else
+									dstX = -200 / length;
+								if (delat_y > 0)
+									dstY = (200 / length) * tan;
+								else
+									dstY = -(200 / length) * tan;
+								dstX = dstX + curMonster->getPositionX();
+								dstY = dstY + curMonster->getPositionY();
+							}
+							else
+							{
+								dstX = curMonster->getPositionX();
+								if (delat_y > 0)
+									dstY = 200 + curMonster->getPositionY();
+								else
+									dstY = -200 + curMonster->getPositionY();
+							}
+
+
+
+							if (dstX >= Xmin && dstX <= Xmax && dstY >= Ymin && dstY <= Ymax)
+							{
+								curMonster->canattack = true;
+								Vec2 target = curheropos - curMonster->getPosition();
+								target.normalize();
+								target = target * 200;
+								auto moveby = MoveBy::create(1.0f, target);
+								curMonster->runAction(moveby);
+							}
+						}
+						else
+							curMonster->canattack = false;
 					}
 				}
-				else
-					curMonster->canattack = false;
+				if (curMonsterType == 1)
+				{
+					Vec2 enemyPos = curMonster->getPosition();
+					if (!Hero->isdead())
+					{
+						if (enemyPos.distance(curheropos) < curMonster->getAttackRange())
+						{
+							curMonster->canattack = true;
+							auto arrow = Sprite::create("Bullet//bullet_1.png");
+							PhysicsBody* arrowbody = PhysicsBody::createBox(arrow->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+							arrowbody->setGravityEnable(false);
+							arrowbody->setDynamic(false);
+							arrowbody->setCategoryBitmask(0x0001);
+							arrowbody->setCollisionBitmask(0x0001);
+							arrowbody->setContactTestBitmask(0x0001);
+							arrow->addComponent(arrowbody);
+							arrow->setTag(4);
+							int set_x = curMonster->getContentSize().width / 2;
+							int set_y = curMonster->getContentSize().height / 2;
+							arrow->setPosition(curMonster->getPositionX(), curMonster->getPositionY());
+							Hero->getCurBattleRoom()->addChild(arrow);
+							Vec2 target = curheropos - curMonster->getPosition();
+							target.normalize();
+							target = target * 400;
+							auto moveby = MoveBy::create(2.0f, target);
+							auto actionRemove = RemoveSelf::create();
+							arrow->runAction(Sequence::create(moveby, actionRemove, nullptr));
+						}
+						else
+							curMonster->canattack = false;
+					}
+				}
 			}
 		}
 	}
@@ -291,6 +432,39 @@ void battleScene::updateBattleRoomDoorState()
 			curBattleRoom->setDoorOpened();
 		else
 			curBattleRoom->setDoorClosed();
+	}
+}
+
+void battleScene::updatePortalJudgement()
+{
+	//if (Hero->getCurBattleRoom() != nullptr)
+	//{
+	//	if (Hero->getCurBattleRoom()->getBattleRoomType() == TypeEnd)
+	//	{
+
+	//	}
+	//}
+	if (Hero->getIsFinished())
+	{
+		Hero->setIsFinished(false);
+		battleScene::Hero->retain();
+		battleScene::Hero->removeFromParent();        //从该场景移除
+		battleScene::_battleSceneNumber++;            //关卡编号+1
+
+		int num = battleScene::_battleSceneNumber;
+		num = num % 5 == 0 ? num / 5 : num / 5 + 1;
+		//if (num % vecSceneType.size() == 1 && num != 1) { //每过size关再随机打乱一次
+		//	srand(static_cast<unsigned int>(time(nullptr)));
+		//	std::random_shuffle(BattleScene::vecSceneType.begin(),
+		//		BattleScene::vecSceneType.end());
+		//}
+
+		assert(battleScene::Hero->getParent() == nullptr);
+
+		this->cleanup();
+		this->removeAllChildren();           //释放
+		Director::getInstance()->replaceScene(TransitionFade::create(2.0f, battleScene::createBattleScene()));
+
 	}
 }
 
