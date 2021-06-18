@@ -3,15 +3,61 @@
 
 hero::~hero() {}
 
-Animate* hero::Frame_animation() {
+void hero::setHeroType(int type)
+{
+	this->_heroType = type;
+}
+
+int hero::getHeroType()const
+{
+	return this->_heroType;
+}
+
+void hero::bindWeapon(weapon* weapon)
+{
+	this->_curWeapon = weapon;
+	Size herosize = this->getContentSize();
+	float weapon_x = herosize.width / 2;
+	float weapon_y = herosize.height/ 2;
+	this->_curWeapon->setPosition((weapon_x), (weapon_y));
+	this->addChild(_curWeapon);
+}
+
+weapon* hero::getCurWeapon()
+{
+	return this->_curWeapon;
+}
+
+weapon* hero::getSecondaryWeapon()
+{
+	return this->_secondaryWeapon;
+}
+
+int hero::getWeaponType()const
+{
+	return this->_curWeapon->getWeaponType();
+}
+
+Animate* hero::Frame_animation_rest() {
 	auto hero_frame_animation = Animation::create();
 
-	char namesize[30] = { 0 };
+	char namesize[100] = { 0 };
 
-	for (int i = 1; i < 5; i++)
+	if (this->getHeroType() == 1)
 	{
-		sprintf(namesize, "Character//knight%d.png", i);
-		hero_frame_animation->addSpriteFrameWithFile(namesize);
+		for (int i = 1; i < 5; i++)
+		{
+			sprintf(namesize, "Character//knight%d.png", i);
+			hero_frame_animation->addSpriteFrameWithFile(namesize);
+		}
+	}
+	if (this->getHeroType() == 2)
+	{
+		for (int i = 1; i < 5; i++)
+		{
+			sprintf(namesize, "Player2//ranger_rest%d.png", i);
+			hero_frame_animation->addSpriteFrameWithFile(namesize);
+		}
 	}
 
 	hero_frame_animation->setDelayPerUnit(0.1f);
@@ -25,27 +71,86 @@ Animate* hero::Frame_animation() {
 	return animate;
 }
 
+
+Animate* hero::Frame_animation_attack() {
+	auto hero_frame_animation = Animation::create();
+
+	char namesize[100] = { 0 };
+
+	if (this->getHeroType() == 1)
+	{
+		for (int i = 1; i < 5; i++)
+		{
+			sprintf(namesize, "Player1//knight_move%d.png", i);
+			hero_frame_animation->addSpriteFrameWithFile(namesize);
+		}
+	}
+	if (this->getHeroType() == 2)
+	{
+		for (int i = 1; i < 5; i++)
+		{
+			sprintf(namesize, "Player2//ranger_move%d.png", i);
+			hero_frame_animation->addSpriteFrameWithFile(namesize);
+		}
+	}
+
+	hero_frame_animation->setDelayPerUnit(0.1f);
+
+	hero_frame_animation->setLoops(1);
+
+	hero_frame_animation->setRestoreOriginalFrame(true);
+
+	auto animate = Animate::create(hero_frame_animation);
+
+	return animate;
+}
+
+
 //绑定场景，用于读取场景里的东西
 void hero::bindscene(Scene* scene) {
 	_scene = scene;
 }
 
-void hero::initmem(float speed, int armormax, int hpmax)
+void hero::initmem()
 {
-	this->_heroSpeedX = speed;
-	this->_heroSpeedY = speed;
-	this->setMaxArmor(armormax);
-	this->setArmor(armormax);
-	this->setMaxHP(hpmax);
-	this->setHP(hpmax);
+	if (this->getHeroType() == 1)
+	{
+		this->_curWeapon = nullptr;
+		this->_secondaryWeapon = nullptr;
+		this->_moveSpeed = 5;
+		this->_heroSpeedX = 5;
+		this->_heroSpeedY = 5;
+		this->setMaxArmor(10);
+		this->setArmor(10);
+		this->setMaxHP(10);
+		this->setHP(10);
+		this->_canAttack = true;
+		auto spritehero = Sprite::create("Character//knight1.png");
+		bindSprite(spritehero);
+	}
+	if (this->getHeroType() == 2)
+	{
+		this->_curWeapon = nullptr;
+		this->_secondaryWeapon = nullptr;
+		this->_moveSpeed = 8;
+		this->_heroSpeedX = 8;
+		this->_heroSpeedY = 8;
+		this->setMaxArmor(20);
+		this->setArmor(20);
+		this->setMaxHP(20);
+		this->setHP(20);
+		this->_canAttack = true;
+		auto spritehero = Sprite::create("Player2//ranger_rest1.png");
+		bindSprite(spritehero);
+	}
 }
 
 bool hero::init()
 {
-	auto spritehero = Sprite::create("Character//knight.png");
 	this->_isFinished = false;
-	bindSprite(spritehero);
+
 	this->schedule(CC_SCHEDULE_SELECTOR(hero::updatekeyboard),0.01f);
+
 	return true;
 }
 
@@ -61,7 +166,6 @@ void hero::falsekeycode(EventKeyboard::KeyCode keycode)
 
 void hero::updatekeyboard(float delta)
 {
-
 		auto listener = EventListenerKeyboard::create();
 		listener->onKeyPressed = [&](EventKeyboard::KeyCode code, Event*)
 		{
@@ -107,26 +211,32 @@ void hero::updatekeyboard(float delta)
 
 		if (keyMap[right]&& !this->isdead())
 		{
-			this->setmovespeedX(5);
+			this->setmovespeedX(_moveSpeed);
 			int x = x0 + this->_heroSpeedX;
 			int y = y0;
 			if (x > Xmin - 5 && x < Xmax + 5 && y>Ymin - 5 && y < Ymax + 5)
 			{
 				this->getSprite()->setFlippedX(false);
-				this->getSprite()->runAction(Frame_animation());
-				//this->setPosition(x, y);
+				this->getCurWeapon()->getSprite()->setFlippedX(false);
+				if (keyMap[shoot])
+					this->getSprite()->runAction(Frame_animation_attack());
+				else
+					this->getSprite()->runAction(Frame_animation_rest());
 			}
 		}
 		if (keyMap[left]&& !this->isdead())
 		{
-			this->setmovespeedX(-5);
+			this->setmovespeedX(0 - _moveSpeed);
 			int x = x0 + this->_heroSpeedX;
 			int y = y0;
 			if (x > Xmin - 5 && x < Xmax + 5 && y>Ymin - 5 && y < Ymax + 5)
 			{
 				this->getSprite()->setFlippedX(true);
-				this->getSprite()->runAction(Frame_animation());
-				//this->setPosition(x, y);
+				this->getCurWeapon()->getSprite()->setFlippedX(true);
+				if (keyMap[shoot])
+					this->getSprite()->runAction(Frame_animation_attack());
+				else
+					this->getSprite()->runAction(Frame_animation_rest());
 			}
 		}
 		if (!keyMap[left] && !keyMap[right]&& !this->isdead())
@@ -136,61 +246,59 @@ void hero::updatekeyboard(float delta)
 
 		if (keyMap[up]&& !this->isdead())
 		{
-			this->setmovespeedY(5);
+			this->setmovespeedY(_moveSpeed);
 			int x = x0;
 			int y = y0 + this->_heroSpeedY;
 			if (x > Xmin - 5 && x < Xmax + 5 && y>Ymin - 5 && y < Ymax + 5)
 			{
-				this->getSprite()->runAction(Frame_animation());
-				//this->setPosition(x, y);
+				if(keyMap[shoot])
+					this->getSprite()->runAction(Frame_animation_attack());
+				else
+					this->getSprite()->runAction(Frame_animation_rest());
 			}
 		}
 
 		if (keyMap[down]&& !this->isdead())
 		{
-			this->setmovespeedY(-5);
+			this->setmovespeedY(0 - _moveSpeed);
 			int x = x0;
 			int y = y0 + this->_heroSpeedY;
 			if (x > Xmin - 5 && x < Xmax + 5 && y>Ymin - 5 && y < Ymax + 5)
 			{
-				this->getSprite()->runAction(Frame_animation());
-				//this->setPosition(x, y);
+				if (keyMap[shoot])
+					this->getSprite()->runAction(Frame_animation_attack());
+				else
+					this->getSprite()->runAction(Frame_animation_rest());
 			}
 		}
 		if (!keyMap[up] && !keyMap[down]&& !this->isdead())
 		{
 			this->setmovespeedY(0);
 		}
-		//if (!keyMap[up] && !keyMap[down] && !keyMap[left] && !keyMap[right])
-		//{
-		//	getSprite()->stopAllActions();
-		//}
 
 		if (this->getCurBattleRoom() != nullptr)
+		{
 			if (keyMap[shoot])
 			{
 				auto curBattleRoom = this->getCurBattleRoom();
 				//CCLOG("X%d,Y%d", this->getCurBattleRoom()->getColumnNum(), this->getCurBattleRoom()->getRowNum());
-				if(!(curBattleRoom->checkPortalPosition(this)))
-
+				if (!(curBattleRoom->checkPortalPosition(this)))
+				{
+					auto curDrop = curBattleRoom->checkNearbyDrop(this);
+					if (curDrop != nullptr)
+						if (!curDrop->getIsUsed())
+						{
+							getdamage(-2);
+							curDrop->setIsUsed(1);
+						}
 					if (curBattleRoom->getBattleRoomType() == TypeNormal)
 					{
-						//auto Bullet = bullet::create();
-						//PhysicsBody* bulletbody = PhysicsBody::createBox(Bullet->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
-						//bulletbody->setGravityEnable(false);
-						//bulletbody->setDynamic(false);
-						//bulletbody->setCategoryBitmask(0x0001);
-						//bulletbody->setCollisionBitmask(0x0001);
-						//bulletbody->setContactTestBitmask(0x0001);
-						//Bullet->addComponent(bulletbody);
-						//Bullet->setTag(3);
 						monster* nearMonster = nullptr;
 						Vec2 curPos = this->getPosition();
 						float distance = 99999;
 						int set_x = this->getContentSize().width / 2;
 						int set_y = this->getContentSize().height / 2;
-						//Bullet->setPosition(set_x, set_y);
-						//this->addChild(Bullet);
+
 						for (monster* curMonster : this->getCurBattleRoom()->getVecMonster())
 						{
 							if (!curMonster->isdead())
@@ -205,33 +313,59 @@ void hero::updatekeyboard(float delta)
 						}
 						if (nearMonster != nullptr)
 						{
-							auto Bullet = bullet::create();
-							PhysicsBody* bulletbody = PhysicsBody::createBox(Bullet->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
-							bulletbody->setGravityEnable(false);
-							bulletbody->setDynamic(false);
-							bulletbody->setCategoryBitmask(0x0001);
-							bulletbody->setCollisionBitmask(0x0001);
-							bulletbody->setContactTestBitmask(0x0001);
-							Bullet->addComponent(bulletbody);
-							Bullet->setTag(3);
-							Bullet->setPosition(set_x, set_y);
-							this->addChild(Bullet);
-							Vec2 target = nearMonster->getPosition() - curPos;
-							auto moveby = MoveBy::create(0.7f, target * 2);
-							auto actionRemove = RemoveSelf::create();
-							Bullet->runAction(Sequence::create(moveby, actionRemove, nullptr));
+							if (this->getWeaponType() == 0)
+							{
+								if (distance < this->getCurWeapon()->getattackRange()&&_canAttack)
+								{
+									auto Bullet = bullet::create();
+									PhysicsBody* bulletbody = PhysicsBody::createBox(Bullet->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+									bulletbody->setGravityEnable(false);
+									bulletbody->setDynamic(false);
+									bulletbody->setCategoryBitmask(0x0001);
+									bulletbody->setCollisionBitmask(0x0001);
+									bulletbody->setContactTestBitmask(0x0001);
+									Bullet->addComponent(bulletbody);
+									Bullet->setTag(3);
+									Bullet->setPosition(set_x, set_y);
+									this->addChild(Bullet);
+									Vec2 target = nearMonster->getPosition() - curPos;
+									//实现发射速度不同，可改
+									auto moveby = MoveBy::create(0.7f, target * 2);
+									auto actionRemove = RemoveSelf::create();
+									Bullet->runAction(Sequence::create(moveby, actionRemove, nullptr));
+								}
+							}
+							if (this->getWeaponType() == 1)
+							{
+								this->getCurWeapon()->getSprite()->runAction(this->getCurWeapon()->wea_Frame_animation());
+								for (monster* curMonster : this->getCurBattleRoom()->getVecMonster())
+								{
+									if (!curMonster->isdead())
+									{
+										Vec2 enemyPos = curMonster->getPosition();
+										if (enemyPos.distance(curPos) < this->getCurWeapon()->getattackRange())
+										{
+											curMonster->getdamage(this->getCurWeapon()->getdamage());
+										}
+									}
+								}
+							}
 						}
-						//else
-						//{
-						//	auto actionRemove = RemoveSelf::create();
-						//	Bullet->runAction(actionRemove);
-						//}
 					}
+				}
 				if (curBattleRoom->getBattleRoomType() == TypeBox)
 				{
-					curBattleRoom->openChest(this);
+					if (curBattleRoom->getChestState() == CLOSED)
+					{
+						curBattleRoom->openChest(this);
+						curBattleRoom->setChestState(OPENED);
+					}
 				}
+				this->_canAttack = false;
 			}
+			if (!keyMap[shoot])
+				this->_canAttack = true;
+		}
 
 		_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
 }
@@ -246,7 +380,25 @@ void hero::setMaxArmor(int maxarmor) { this->_armorMax = maxarmor; }
 	
 void hero::getdamage(int damage)
 {
-		this->_HP -= damage;
+	if (damage < 0)
+	{
+		if (_HP - damage <= _maxHP)
+			this->_HP -= damage;
+		else
+		{
+			this->_HP = _maxHP;
+		}
+	}
+	else
+	{
+		if (_armor - damage >= 0)
+			this->_armor -= damage;
+		else
+		{
+			this->_armor = 0;
+			this->_HP -= damage - _armor;
+		}
+	}
 }
 
 void hero::setmovespeedX(float spd)

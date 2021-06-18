@@ -1,45 +1,45 @@
-#ifndef _WEAPON_
-#define _WEAPON_
-
+#ifndef _WEAPON_H_
+#define _WEAPON_H_
 #include "cocos2d.h"
-#include "bullet.h"
-#include <new>
-#include <memory>
-#include <string>
 
 USING_NS_CC;
 
-class weapon :public cocos2d::Node {
+class weapon : public Node {
 public:
-	//设置各参数
-	virtual void setMPCosume(int mpConsume) { *_MPconsume = mpConsume; }
-	virtual void setAttackSpeed(float attackSpeed) { *_attackSpeed = attackSpeed; }
-	virtual void setCritRate(float critRate) { *_critRate = critRate; }
-	virtual void setCritMultiple(float critMultiple) { *_critMultiple = critMultiple; }
-	//得到各参数现在值
-	virtual int getMPCosume()const { return *_MPconsume; }
-	virtual float getAttackSpeed()const { return *_attackSpeed; }
-	virtual float getCritRate()const { return *_critRate; }
-	virtual float getCritMultiple()const { return *_critMultiple; }
+	weapon() = default;
+	~weapon();
+	CREATE_FUNC(weapon);
 
-	//virtual std::shared_ptr<bullet> getBulletInstance()const = 0;                                //用途不明
+	void changeWeapon(int changeType);
 
-	virtual weapon* clone()const = 0;
+	void bindSprite(Sprite* sprite);
+	Sprite* getSprite();
 
-	bool weapon::initWeapon(int MPconsume, float attackSpeed, float critRate, float critMultiple);
+	void setWeaponType();
+
+	int getWeaponType()const;
+
+	virtual bool init();
+
+	void setFireSpeed(float fireSpeed);
+
+	float getFireSpeed()const;
+
+	void setdamage(int damage);
+
+	int getdamage()const;
+
+	void setattackRange(float range);
+	float getattackRange()const;
+
+	void weaponInit(float speed, int damage,float attackrange);
+
+	Animate* wea_Frame_animation();
 protected:
-	//bool weapon::initWeapon(int MPconsume, float attackSpeed, float critRate, float critMultiple);
-
-	std::shared_ptr<int> _MPconsume;                                      //耗蓝
-	std::shared_ptr<float> _attackSpeed;                                  //攻速
-	std::shared_ptr<float> _critRate;                                     //暴击率
-	std::shared_ptr<float> _critMultiple;                                 //暴击倍数
-private:
-	//初始化各成员
-	bool initWeaponMember(int MPconsume, float attackSpeed, float critRate, float critMultiple);
+	Sprite* _weaponSprite;
+	int _weaponType;
+	float _fireSpeed;
+	int _damage;
+	float _attackRange;
 };
-
-
-
-
-#endif // _WEAPON_
+#endif;

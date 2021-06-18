@@ -18,6 +18,7 @@ void drop::bindSprite(Sprite* sprite) {
 
 bool drop::init() 
 {
+	_isUsed = 0;
 	this->settype();
 	//PhysicsBody* dropbody = PhysicsBody::createBox(this->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
 	//dropbody->setGravityEnable(false);

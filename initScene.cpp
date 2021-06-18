@@ -4,8 +4,8 @@
 #include "cocos-ext.h"
 #include "AudioEngine.h"
 #include "secureRoom.h"
-#include"settingScene.h"
-#include"battleScene.h"
+#include "settingScene.h"
+#include "battleScene.h"
 USING_NS_CC;
 
 Scene* initScene::createScene()
@@ -111,7 +111,7 @@ void initScene::menuCloseCallbackEnd(Ref* pSender)
 /*开始游戏*/
 void initScene::menuCloseCallbackStart(Ref* pSender)
 {
-    Director::getInstance()->replaceScene(TransitionSlideInT::create(1.8f, battleScene::createBattleScene()));
+    Director::getInstance()->replaceScene(TransitionSlideInT::create(1.8f, secureRoom::createScene()));
 }
 
 /*进入设置面板*/

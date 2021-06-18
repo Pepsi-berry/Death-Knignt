@@ -1,6 +1,7 @@
 #include "cocos2d.h"
 #include "character.h"
 #include "bullet.h"
+#include "weapon.h"
 
 USING_NS_CC;
 
@@ -19,6 +20,9 @@ public:
 	CREATE_FUNC(hero);
 
 	virtual bool init();
+
+	void setHeroType(int type);
+	int getHeroType()const;
 
 	//绑定场景，用于读取场景里的东西
 	void bindscene(Scene* scene);
@@ -48,21 +52,31 @@ public:
 
 	virtual void getdamage(int damage);
 
-	void initmem(float speed, int armormax, int hpmax);
+	void initmem();
 
-	Animate* Frame_animation();
+	void bindWeapon(weapon* weapon);
+	weapon* getCurWeapon();
+	weapon* getSecondaryWeapon();
+	int getWeaponType()const;
+
+	Animate* Frame_animation_rest();
+	Animate* Frame_animation_attack();
 	
 protected:
 	std::map<cocos2d::EventKeyboard::KeyCode, bool> keyMap;
+	int _heroType;
 	float _heroSpeedX = 5, _heroSpeedY = 5;
 	Scene* _scene;
 
 	//储存英雄所处的房间或走廊,便于进行边界判定,元素生成等操作
 	battleRoom* _curBattleRoom;
 	room* _curCorridor;
+	weapon* _curWeapon;
+	weapon* _secondaryWeapon;
 
 	int _armor=0;
 	int _armorMax;
 	bool _isFinished;
+	bool _canAttack;
 };
 #endif

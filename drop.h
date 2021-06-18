@@ -19,9 +19,12 @@ public:
 
 	void settype();
 	int gettype()const;
+	void setIsUsed(bool isUsed) { _isUsed = isUsed; }
+	bool getIsUsed() { return _isUsed; }
 
 protected:
 	int _dropType;
+	bool _isUsed;
 	Sprite* _dropsprite;
 };
 

@@ -8,7 +8,6 @@
 #include "bullet.h"
 #include "weapon.h"
 #include "monster.h"
-#include "RangedWeapon.h"
 
 #define PI 3.14159f                         //暂时添加,用途未定
 
@@ -58,5 +57,8 @@ constexpr int DirectionY[4] = { 0, 1, 0, -1 };
 
 #define LR 0                                //定义走廊朝向左右
 #define UD 1                                //定义走廊朝向上下
+
+#define OPENED false                        //定义箱子已被打开
+#define CLOSED true                         //定义箱子未被打开
 
 #endif

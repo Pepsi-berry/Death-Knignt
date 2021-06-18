@@ -3,7 +3,8 @@
 
 #include "cocos2d.h"
 #include "battleRoom.h"
-#include "hero.h"
+#include "secureRoom.h"
+//#include "hero.h"
 #include "drop.h"
 
 //class monster;
@@ -12,6 +13,7 @@ USING_NS_CC;
 
 class battleScene : public Scene
 {
+	friend class secureRoom;
 	static constexpr int MaxRoom = 6;               //设置较小房间数以保证加载时间
 public:
 	CREATE_FUNC(battleScene);
@@ -22,6 +24,7 @@ public:
 
 	static int getBattleSceneNumber() { return _battleSceneNumber; }
 	static int getBattleSceneType() { return _battleSceneType; }
+
 
 	void setBattleSceneNumber(int battleSceneNumber) { _battleSceneNumber = battleSceneNumber; }
 	void setBattleSceneType(int battleSceneType) { _battleSceneType = battleSceneType; }
@@ -54,6 +57,8 @@ public:
 	void updateMonsterAttack(float delta);                                  //更新怪物攻击
 	void updateBattleRoomDoorState();                                       //更新battleRoom门的开关
 	void updatePortalJudgement();                                           //更新对传送门以及切场景的判定
+	void updateGameLose();                                                  //更新对游戏失败的判定
+	void updateHeroArmor(float delta);                                                 //更新护甲在不受攻击一段时间后随时间回复
 
 	//
 	//
@@ -85,8 +90,15 @@ private:
 	Vector<room*> vecCorridor;
 	Vector<monster*>vecMonster;
 
+	//储存英雄的状态信息,完成不同场景之间的传递
+	static int _heroStateType;
+	static int _heroStateHP;
+	static int _heroStateArmor;
+	static int _heroStateWeaponType;
+
 
 	int countForRoom;
+	int _recoveryCoolingTime = 0;
 
 };
 

@@ -17,6 +17,7 @@ public:
 	CREATE_FUNC(monster);
 
 	void move(float delta);
+	void updatedead(float delta);
 
 	virtual bool init();
 
@@ -38,6 +39,10 @@ public:
 	void setAttackRange();
 	int getAttackRange()const;
 
+
+	Animate* mons_Frame_animation();
+	Animate* mons_Frame_animation_rest();
+	Animate* mons_Frame_animation_dead();
 private:
 	int _damage=2;
 	int enemyType ;

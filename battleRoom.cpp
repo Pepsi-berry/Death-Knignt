@@ -15,6 +15,7 @@ bool battleRoom::init()
 	_sizeX = SIZEOFROOM;
 	_sizeY = SIZEOFROOM;
 	_battleRoomType = TypeNormal;
+	_chestState = CLOSED;
 	_portal = nullptr;
 
 	this->scheduleUpdate();
@@ -77,23 +78,6 @@ void battleRoom::createMonster()
 		_vecMonster.pushBack(tempMonster);
 		this->addChild(tempMonster, 0);
 
-		//tempMonster->bindAtBattleRoom(this);                    //绑定所在房间
-		//tempMonster->startCount = i * 2;
-		// 
-		//auto monsterforT = monster::create();
-		////this->bindmonster(monsterforT);
-		////this->getmonster();
-		//monsterforT->setPosition(Point((visibleSize.width * (i + 1)) / 5, (visibleSize.height * (i + 1)) / 5));
-		//PhysicsBody* physicsBody2 = PhysicsBody::createBox(monsterforT->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
-		//physicsBody2->setGravityEnable(false);
-		//physicsBody2->setDynamic(false);
-		//physicsBody2->setCategoryBitmask(0x0001);
-		//physicsBody2->setCollisionBitmask(0x0001);
-		//physicsBody2->setContactTestBitmask(0x0001);
-		//monsterforT->addComponent(physicsBody2);
-		//monsterforT->setTag(2);
-		//vecMonster.pushBack(monsterforT);
-		//this->addChild(monsterforT, 0);
 	}
 
 }
@@ -133,7 +117,7 @@ void battleRoom::createBattleRoomMaping()
 	_lowerRightCornerPositionX = X + WIDTHOFFLOOR * (_sizeX - 2);
 	_lowerRightCornerPositionY = Y - HEIGHTOFFLOOR * (_sizeY - 2);
 
-	CCLOG("%f,%f", _centerX, _centerY);
+	//CCLOG("%f,%f", _centerX, _centerY);
 	//CCLOG("%d,%d", X, Y);
 	//CCLOG("%d,%d", _topLeftCornerPositionX, _lowerRightCornerPositionX);
 	float curX = X, curY = Y;
@@ -328,6 +312,18 @@ Sprite* battleRoom::checkNearbyChest(hero* Hero)
 	return nullptr;
 }
 
+drop* battleRoom::checkNearbyDrop(hero* Hero)
+{
+	for (auto curDrop : _vecDrop)
+	{
+		Rect dropRect = curDrop->getBoundingBox();
+		Rect heroRect = Hero->getBoundingBox();
+		if (dropRect.intersectsRect(heroRect))
+			return curDrop;
+	}
+	return nullptr;
+}
+
 void battleRoom::openChest(hero* Hero)
 {
 	auto curChest = checkNearbyChest(Hero);
@@ -335,6 +331,7 @@ void battleRoom::openChest(hero* Hero)
 	{
 		auto randdrop = drop::create();
 		randdrop->setPosition(curChest->getPosition());
+		_vecDrop.pushBack(randdrop);
 		this->addChild(randdrop);
 	}
 
