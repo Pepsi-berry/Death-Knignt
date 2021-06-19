@@ -1,7 +1,5 @@
 #include "initScene.h"
-
 #include "cocos2d.h"
-#include "cocos-ext.h"
 #include "AudioEngine.h"
 #include "secureRoom.h"
 #include "settingScene.h"
@@ -30,13 +28,13 @@ bool initScene::init()
     {
         return false;
     }
-
+    AudioEngine::stopAll();
     //获取界面尺寸
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
     /*背景音乐*/
-    auto backgroundAudioID = AudioEngine::play2d("bkMusic.mp3", true, 0.3f);
+    backgroundAudioID = AudioEngine::play2d("bkMusic.mp3", false);
 
     /*开始界面背景图像*/
     auto startBackground = Sprite::create("start.png");
@@ -61,10 +59,10 @@ bool initScene::init()
     auto exitMenu = MenuItemLabel::create(exitLab, CC_CALLBACK_1(initScene::menuCloseCallbackEnd, this));
 
     auto setImg = MenuItemImage::create(
-        "set.png",
-        "set.png",
+        "information.png",
+        "information.png",
         CC_CALLBACK_1(initScene::menuCloseCallbackSet, this));
-    setImg->setScale(0.4f, 0.4f);
+    setImg->setScale(0.2f, 0.2f);
     auto exitImg = MenuItemImage::create(
         "exit.png",
         "exit.png",
@@ -84,6 +82,8 @@ bool initScene::init()
     this->addChild(Menu_1, 1);
     this->addChild(Menu_2, 1);
     this->addChild(Menu_3, 1);
+
+
     return true;
 }
 
@@ -111,6 +111,8 @@ void initScene::menuCloseCallbackEnd(Ref* pSender)
 /*开始游戏*/
 void initScene::menuCloseCallbackStart(Ref* pSender)
 {
+    AudioEngine::stop(backgroundAudioID);
+    Director::getInstance()->pushScene(initScene::create());
     Director::getInstance()->replaceScene(TransitionSlideInT::create(1.8f, secureRoom::createScene()));
 }
 

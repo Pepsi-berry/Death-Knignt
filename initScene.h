@@ -20,6 +20,8 @@ public:
     void menuCloseCallbackStart(cocos2d::Ref* pSender);
     void menuCloseCallbackSet(cocos2d::Ref* pSender);
 
+    int backgroundAudioID;
+
     // implement the "static create()" method manually
     CREATE_FUNC(initScene);
 

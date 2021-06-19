@@ -11,11 +11,15 @@ public:
 	virtual bool init();
 
 	void menuCloseCallbackEnd(cocos2d::Ref* pSender);//关闭设置面板的回调函数
+	void menuCloseCallbackChange(cocos2d::Ref* pSender);//改变音乐播放状态的回调函数
+
 
 	CREATE_FUNC(settingScene);
 private:
-
-
+	//菜单
+	cocos2d::Menu* Menu01;
+	cocos2d::Menu* Menu02;
+	cocos2d::Menu* Menu03;
 
 };
 

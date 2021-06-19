@@ -8,14 +8,15 @@
 #include "bullet.h"
 #include "weapon.h"
 #include "monster.h"
+#include "boss.h"
 
 #define PI 3.14159f                         //暂时添加,用途未定
 
 //宏定义方向
-#define RIGHT 0
-#define UP 1
-#define LEFT 2
-#define DOWN 3
+#define m_RIGHT 0
+#define m_UP 1
+#define m_LEFT 2
+#define m_DOWN 3
 //依次表示右上左下方向
 constexpr int DirectionX[4] = { 1, 0, -1, 0 };  
 constexpr int DirectionY[4] = { 0, 1, 0, -1 };  

@@ -56,7 +56,6 @@ public:
 
 	void bindWeapon(weapon* weapon);
 	weapon* getCurWeapon();
-	weapon* getSecondaryWeapon();
 	int getWeaponType()const;
 
 	Animate* Frame_animation_rest();
@@ -73,6 +72,7 @@ protected:
 	room* _curCorridor;
 	weapon* _curWeapon;
 	weapon* _secondaryWeapon;
+
 
 	int _armor=0;
 	int _armorMax;

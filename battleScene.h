@@ -1,6 +1,7 @@
 #ifndef _BATTTLE_SCENE_
 #define _BATTLE_SCENE_
 
+#include "ui/CocosGUI.h"
 #include "cocos2d.h"
 #include "battleRoom.h"
 #include "secureRoom.h"
@@ -21,6 +22,8 @@ public:
 	virtual bool init();
 
 	virtual void update(float delta);
+
+	void randomBGM();      //随机音乐bgm
 
 	static int getBattleSceneNumber() { return _battleSceneNumber; }
 	static int getBattleSceneType() { return _battleSceneType; }
@@ -58,7 +61,10 @@ public:
 	void updateBattleRoomDoorState();                                       //更新battleRoom门的开关
 	void updatePortalJudgement();                                           //更新对传送门以及切场景的判定
 	void updateGameLose();                                                  //更新对游戏失败的判定
-	void updateHeroArmor(float delta);                                                 //更新护甲在不受攻击一段时间后随时间回复
+	void updateUILoading();                                                 //更新状态条信息
+	void updateHeroArmor(float delta);                                      //更新护甲在不受攻击一段时间后随时间回复
+	void updateSkillCooling(float delta);                                   //更新技能冷却
+	void updateBossState();                                                 //更新boss状态,当前用于判定是否加入传送门和箱子
 
 	//
 	//
@@ -68,6 +74,9 @@ public:
 	void setPhyWorld(PhysicsWorld* world) { m_world = world; };
 	/**/
 
+	 //两个回调
+	void menuCloseCallbackEnd(Ref* pSender);
+	void menuCloseCallbackSet(Ref* pSender);
 
 
 
@@ -99,7 +108,13 @@ private:
 
 	int countForRoom;
 	int _recoveryCoolingTime = 0;
+	int _skillCoolingTime = 0;
 
+	//状态条
+	ui::LoadingBar* HPLoadingBar = ui::LoadingBar::create();
+
+	//状态条的数字
+	Label* HPnum;
 };
 
 

@@ -28,11 +28,6 @@ weapon* hero::getCurWeapon()
 	return this->_curWeapon;
 }
 
-weapon* hero::getSecondaryWeapon()
-{
-	return this->_secondaryWeapon;
-}
-
 int hero::getWeaponType()const
 {
 	return this->_curWeapon->getWeaponType();
@@ -132,9 +127,9 @@ void hero::initmem()
 	{
 		this->_curWeapon = nullptr;
 		this->_secondaryWeapon = nullptr;
-		this->_moveSpeed = 8;
-		this->_heroSpeedX = 8;
-		this->_heroSpeedY = 8;
+		this->_moveSpeed = 10;
+		this->_heroSpeedX = 10;
+		this->_heroSpeedY = 10;
 		this->setMaxArmor(20);
 		this->setArmor(20);
 		this->setMaxHP(20);
@@ -150,7 +145,6 @@ bool hero::init()
 	this->_isFinished = false;
 
 	this->schedule(CC_SCHEDULE_SELECTOR(hero::updatekeyboard),0.01f);
-
 	return true;
 }
 
@@ -284,13 +278,17 @@ void hero::updatekeyboard(float delta)
 				//CCLOG("X%d,Y%d", this->getCurBattleRoom()->getColumnNum(), this->getCurBattleRoom()->getRowNum());
 				if (!(curBattleRoom->checkPortalPosition(this)))
 				{
-					auto curDrop = curBattleRoom->checkNearbyDrop(this);
-					if (curDrop != nullptr)
-						if (!curDrop->getIsUsed())
-						{
-							getdamage(-2);
-							curDrop->setIsUsed(1);
-						}
+					if (_canAttack)
+					{
+						auto curDrop = curBattleRoom->checkNearbyDrop(this);
+						if (curDrop != nullptr)
+							if (!curDrop->getIsUsed())
+							{
+								getdamage(-2);
+								curDrop->setIsUsed(1);
+								curDrop->removeFromParent();
+							}
+					}
 					if (curBattleRoom->getBattleRoomType() == TypeNormal)
 					{
 						monster* nearMonster = nullptr;
@@ -352,6 +350,70 @@ void hero::updatekeyboard(float delta)
 							}
 						}
 					}
+					else if (curBattleRoom->getBattleRoomType() == TypeBoss)
+					{
+						boss* nearBoss = nullptr;
+						float distance_1 = 99999;
+						int set_x_b = this->getContentSize().width / 2;
+						int set_y_b = this->getContentSize().height / 2;
+						Vec2 curPos = this->getPosition();
+						float distance = 99999;
+						int set_x = this->getContentSize().width / 2;
+						int set_y = this->getContentSize().height / 2;
+
+						for (boss* curBoss : this->getCurBattleRoom()->getVecBoss())
+						{
+							if (!curBoss->isdead())
+							{
+								Vec2 enemyPos = curBoss->getPosition();
+								if (enemyPos.distance(curPos) < distance_1)
+								{
+									nearBoss = curBoss;
+									distance_1 = enemyPos.distance(curPos);
+								}
+							}
+						}
+						if (nearBoss != nullptr)
+						{
+							if (this->getWeaponType() == 0)
+							{
+								if (distance < this->getCurWeapon()->getattackRange() && _canAttack)
+								{
+									auto Bullet = bullet::create();
+									PhysicsBody* bulletbody = PhysicsBody::createBox(Bullet->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+									bulletbody->setGravityEnable(false);
+									bulletbody->setDynamic(false);
+									bulletbody->setCategoryBitmask(0x0001);
+									bulletbody->setCollisionBitmask(0x0001);
+									bulletbody->setContactTestBitmask(0x0001);
+									Bullet->addComponent(bulletbody);
+									Bullet->setTag(3);
+									Bullet->setPosition(set_x_b, set_y_b);
+									this->addChild(Bullet);
+									Vec2 target = nearBoss->getPosition() - curPos;
+									//实现发射速度不同，可改
+									auto moveby = MoveBy::create(0.7f, target * 2);
+									auto actionRemove = RemoveSelf::create();
+									Bullet->runAction(Sequence::create(moveby, actionRemove, nullptr));
+								}
+							}
+							if (this->getWeaponType() == 1)
+							{
+								this->getCurWeapon()->getSprite()->runAction(this->getCurWeapon()->wea_Frame_animation());
+								for (boss* curBoss : this->getCurBattleRoom()->getVecBoss())
+								{
+									if (!curBoss->isdead())
+									{
+										Vec2 enemyPos = curBoss->getPosition();
+										if (enemyPos.distance(curPos) < this->getCurWeapon()->getattackRange())
+										{
+											curBoss->getdamage(this->getCurWeapon()->getdamage());
+										}
+									}
+								}
+							}
+						}
+					}
 				}
 				if (curBattleRoom->getBattleRoomType() == TypeBox)
 				{
@@ -400,7 +462,6 @@ void hero::getdamage(int damage)
 		}
 	}
 }
-
 void hero::setmovespeedX(float spd)
 {
 	this->_heroSpeedX = spd;

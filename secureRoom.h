@@ -1,8 +1,8 @@
 #ifndef _SECURE_ROOM_
 #define _SECURE_ROOM_
-#include "cocos2d.h"
 #include "hero.h"
 USING_NS_CC;
+
 
 class secureRoom : public Scene {
 public:

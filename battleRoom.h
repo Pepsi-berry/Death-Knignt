@@ -21,6 +21,7 @@ public:
 	void createBattleRoomMaping();
 	void createBox(float positionX, float positionY);
 	void createMonster();
+	void createBoss();
 	void generateDoorMaping(float positionX, float positionY, int layer);
 
 	void setRowNum(int rowNum) { _rowNum = rowNum; }
@@ -46,6 +47,7 @@ public:
 	Vector<weapon*>& getVecWeapon() { return _vecWeapon; }
 	Vector<Sprite*>& getVecBox() { return _vecBox; }
 	Vector<monster*>& getVecMonster() { return _vecMonster; }
+	Vector<boss*>& getVecBoss() { return _vecBoss; }
 	Vector<drop*>& getVecdrop() { return _vecDrop; }
 
 	void setDoorOpened();
@@ -68,6 +70,7 @@ private:
 	Vector<weapon*> _vecWeapon;                 //用于对生成的武器进行管理,主要在于切换武器
 	Vector<Sprite*> _vecBox;                    //用于对生成在地图中的箱子进行管理,主要在于开箱子
 	Vector<monster*> _vecMonster;               //储存生成在房间中的怪物实体,便于进行更新状态和射击等的功能实现
+	Vector<boss*> _vecBoss;
 	Vector<drop*> _vecDrop;                     //储存生成在房间中的道具,以完成拾取
 	Sprite* _portal;                            //用于终点传送判定
 

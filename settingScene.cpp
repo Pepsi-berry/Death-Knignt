@@ -59,34 +59,70 @@ bool settingScene::init()
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    auto volumeLab = Label::createWithTTF("Volume:", "fonts/arial.ttf", 36);
-    volumeLab->setPosition(Vec2(visibleSize.width * 0.5f + origin.x, visibleSize.height * 0.5f + origin.y));
-    this->addChild(volumeLab, 0);
-    //官方测试文档提供的声音调节案例
-    auto _audioID = AudioEngine::INVALID_AUDIO_ID;
-    auto volumeSlider = SliderEx::create();
-    volumeSlider->setPercent(100);
-    volumeSlider->addEventListener([&](Ref* sender, Slider::EventType event) {
-        SliderEx* slider = dynamic_cast<SliderEx*>(sender);
-        auto _volume = slider->getRatio();
-        if (_audioID != AudioEngine::INVALID_AUDIO_ID) {
-            AudioEngine::setVolume(_audioID, _volume);
-        }
-        });
-    volumeSlider->setPosition(Vec2(visibleSize.width * 0.5f + origin.x, visibleSize.height * 0.35f + origin.y));
-    this->addChild(volumeSlider, 2);
+
+
+    /*创建菜单*/
+    auto bkMusicLab = Label::createWithTTF("Background Music : ", "fonts/Marker Felt.ttf", 36);
+
+    /*ON，OFF菜单在点击时会切换*/
+    auto changeLabOn = Label::createWithTTF("ON", "fonts/Marker Felt.ttf", 72);
+    auto changeLabOff = Label::createWithTTF("OFF", "fonts/Marker Felt.ttf", 72);
+
     auto exitImg = MenuItemImage::create(
         "exit.png",
         "exit.png",
         CC_CALLBACK_1(settingScene::menuCloseCallbackEnd, this));
-
+    exitImg->setScale(0.4f, 0.4f);
     auto Menu_off = Menu::create(exitImg, NULL);
     Menu_off->setPosition(visibleSize.width + origin.x - 28, visibleSize.height + origin.y - 25);
     this->addChild(Menu_off, 1);
+
+    auto changeMenuOn = MenuItemLabel::create(changeLabOn, CC_CALLBACK_1(settingScene::menuCloseCallbackChange, this));
+    auto changeMenuOff = MenuItemLabel::create(changeLabOff, CC_CALLBACK_1(settingScene::menuCloseCallbackChange, this));
+
+    Menu01 = Menu::create(changeMenuOn, NULL);
+    Menu02 = Menu::create(changeMenuOff, NULL);
+
+    bkMusicLab->setPosition(visibleSize.width/2, visibleSize.width / 2);
+    Menu01->setPosition(visibleSize.width / 2, visibleSize.width / 2-80);
+    Menu02->setPosition(visibleSize.width / 2, visibleSize.width / 2 - 80);
+
+    this->addChild(bkMusicLab, 1);
+    this->addChild(Menu01, 1);
+    this->addChild(Menu02, 1);
+
+
+    /*修改ON/OFF状态*/
+    if (AudioEngine::isEnabled()) {
+        Menu01->setVisible(true);
+        Menu02->setVisible(false);
+    }
+    else {
+        Menu01->setVisible(false);
+        Menu02->setVisible(true);
+    }
+
+    return true;
 }
 
 /*关闭设置面板的回调*/
 void settingScene::menuCloseCallbackEnd(Ref* pSender)
 {
     Director::getInstance()->popScene();
+}
+/*改变背景音乐播放状态的回调*/
+void settingScene::menuCloseCallbackChange(Ref* pSender)
+{
+    /*切换On，off菜单的显示状态*/
+    Menu01->setVisible(1 - (Menu01->isVisible()));
+    Menu02->setVisible(1 - (Menu02->isVisible()));
+
+
+    /*切换音乐的播放状态*/
+    if (Menu01->isVisible()) {
+        AudioEngine::resumeAll();
+    }
+    else {
+        AudioEngine::pauseAll();
+    }
 }

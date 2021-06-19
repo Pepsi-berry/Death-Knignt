@@ -78,7 +78,43 @@ void battleRoom::createMonster()
 		_vecMonster.pushBack(tempMonster);
 		this->addChild(tempMonster, 0);
 
+		//tempMonster->bindAtBattleRoom(this);                    //绑定所在房间
+		//tempMonster->startCount = i * 2;
+		// 
+		//auto monsterforT = monster::create();
+		////this->bindmonster(monsterforT);
+		////this->getmonster();
+		//monsterforT->setPosition(Point((visibleSize.width * (i + 1)) / 5, (visibleSize.height * (i + 1)) / 5));
+		//PhysicsBody* physicsBody2 = PhysicsBody::createBox(monsterforT->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+		//physicsBody2->setGravityEnable(false);
+		//physicsBody2->setDynamic(false);
+		//physicsBody2->setCategoryBitmask(0x0001);
+		//physicsBody2->setCollisionBitmask(0x0001);
+		//physicsBody2->setContactTestBitmask(0x0001);
+		//monsterforT->addComponent(physicsBody2);
+		//monsterforT->setTag(2);
+		//vecMonster.pushBack(monsterforT);
+		//this->addChild(monsterforT, 0);
 	}
+}
+
+void battleRoom::createBoss()
+{
+	float bossPositionX = _centerX;
+	float bossPositionY = _centerY;
+	boss* tempBoss = boss::create();
+	tempBoss->bindAtBattleRoom(this);
+	tempBoss->setPosition(Point(bossPositionX, bossPositionY));
+	PhysicsBody* physicsBody2 = PhysicsBody::createBox(tempBoss->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+	physicsBody2->setGravityEnable(false);
+	physicsBody2->setDynamic(false);
+	physicsBody2->setCategoryBitmask(0x0001);
+	physicsBody2->setCollisionBitmask(0x0001);
+	physicsBody2->setContactTestBitmask(0x0001);
+	tempBoss->addComponent(physicsBody2);
+	tempBoss->setTag(9);
+	_vecBoss.pushBack(tempBoss);
+	this->addChild(tempBoss, 0);
 
 }
 
@@ -117,7 +153,7 @@ void battleRoom::createBattleRoomMaping()
 	_lowerRightCornerPositionX = X + WIDTHOFFLOOR * (_sizeX - 2);
 	_lowerRightCornerPositionY = Y - HEIGHTOFFLOOR * (_sizeY - 2);
 
-	//CCLOG("%f,%f", _centerX, _centerY);
+	CCLOG("%f,%f", _centerX, _centerY);
 	//CCLOG("%d,%d", X, Y);
 	//CCLOG("%d,%d", _topLeftCornerPositionX, _lowerRightCornerPositionX);
 	float curX = X, curY = Y;
@@ -127,17 +163,17 @@ void battleRoom::createBattleRoomMaping()
 		{
 			if (y == 0 || y == _sizeY - 1 || x == 0 || x == _sizeX - 1) 
 			{
-				if (((x == 0) && _visDirection[LEFT] && ((_sizeY / 2) - 2 <= y) &&
+				if (((x == 0) && _visDirection[m_LEFT] && ((_sizeY / 2) - 2 <= y) &&
 					(y <= _sizeY / 2 - 2 + SIZEOFCORRIDOR - 3)) ||
 
-					((x == _sizeX - 1) && _visDirection[RIGHT] &&
+					((x == _sizeX - 1) && _visDirection[m_RIGHT] &&
 						(_sizeY / 2 - 2 <= y) &&
 						(y <= _sizeY / 2 - 2 + SIZEOFCORRIDOR - 3)) ||
 
-					((y == 0) && _visDirection[DOWN] && ((_sizeX / 2) - 2 <= x) &&
+					((y == 0) && _visDirection[m_DOWN] && ((_sizeX / 2) - 2 <= x) &&
 						(x <= _sizeX / 2 - 2 + SIZEOFCORRIDOR - 3)) ||
 
-					((y == _sizeY - 1) && _visDirection[UP] && ((_sizeX / 2) - 2 <= x) &&
+					((y == _sizeY - 1) && _visDirection[m_UP] && ((_sizeX / 2) - 2 <= x) &&
 						(x <= _sizeX / 2 - 2 + SIZEOFCORRIDOR - 3))) 
 				{
 					if (y != _sizeY - 1)
@@ -152,7 +188,7 @@ void battleRoom::createBattleRoomMaping()
 					else
 						generateWallMaping(curX, curY, 1);
 				}
-				else if (_visDirection[UP] && y == _sizeY - 1 &&
+				else if (_visDirection[m_UP] && y == _sizeY - 1 &&
 					(x == _sizeX / 2 - 3 ||
 						x == _sizeX / 2 + SIZEOFCORRIDOR - 4))
 				{
@@ -228,14 +264,24 @@ void battleRoom::setDoorClosed()
 bool battleRoom::getIsClearance()
 {
 	bool isClearance = true;
-	for (auto curMonster : this->getVecMonster())
-	{
-		if (!curMonster->isdead())
+	if(this->_battleRoomType==TypeNormal)
+		for (auto curMonster : this->getVecMonster())
 		{
-			isClearance = false;
-			break;
+			if (!curMonster->isdead())
+			{
+				isClearance = false;
+				break;
+			}
 		}
-	}
+	else if(this->_battleRoomType == TypeBoss)
+		for (auto curBoss : this->getVecBoss())
+		{
+			if (!curBoss->isdead())
+			{
+				isClearance = false;
+				break;
+			}
+		}
 	return isClearance;
 }
 
@@ -249,18 +295,18 @@ void battleRoom::checkBattleRoomBoundaryBarrier(hero* Hero)
 			heroPositionY &&
 			heroPositionY >= (_lowerRightCornerPositionY + HEIGHTOFFLOOR * (_sizeY / 2 - 3))))
 		{
-			if (Hero->getmovespeedX() > 0 && heroPositionX >= _lowerRightCornerPositionX && !_visDirection[RIGHT])
+			if (Hero->getmovespeedX() > 0 && heroPositionX >= _lowerRightCornerPositionX && !_visDirection[m_RIGHT])
 				//ispeedX = .0f;
 				Hero->setmovespeedX(.0f);
-			if (Hero->getmovespeedX() < 0 && heroPositionX <= _topLeftCornerPositionX && !_visDirection[LEFT])
+			if (Hero->getmovespeedX() < 0 && heroPositionX <= _topLeftCornerPositionX && !_visDirection[m_LEFT])
 				Hero->setmovespeedX(.0f);
 		}
 		else if (_topLeftCornerPositionX + HEIGHTOFFLOOR * (_sizeY / 2 - 3) <= heroPositionX &&                     //??
 			heroPositionX <= _lowerRightCornerPositionX - HEIGHTOFFLOOR * (_sizeY / 2 - 3))
 		{
-			if (Hero->getmovespeedY() > 0 && heroPositionY >= _topLeftCornerPositionY + HEIGHTOFFLOOR / 2 && !_visDirection[UP])
+			if (Hero->getmovespeedY() > 0 && heroPositionY >= _topLeftCornerPositionY + HEIGHTOFFLOOR / 2 && !_visDirection[m_UP])
 				Hero->setmovespeedY(.0f);
-			if (Hero->getmovespeedY() < 0 && heroPositionY <= _lowerRightCornerPositionY && !_visDirection[DOWN])
+			if (Hero->getmovespeedY() < 0 && heroPositionY <= _lowerRightCornerPositionY && !_visDirection[m_DOWN])
 				Hero->setmovespeedY(.0f);
 		}
 		else

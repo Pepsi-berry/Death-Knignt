@@ -1,6 +1,10 @@
+#include "ui/CocosGUI.h"
+#include "cocos2d.h"
 #include "battleScene.h"
-
+#include "settingScene.h"
+#include "initScene.h"
 #include <cmath>
+#include "AudioEngine.h"
 //#include "set_scene.h"
 
 //hero* battleScene::Hero = nullptr;
@@ -33,10 +37,52 @@ bool battleScene::init()
 {
 	if (!Scene::init())
 		return false;
+
+	//bgm启动
+	AudioEngine::stopAll();
+	randomBGM();
+
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 
 	initBattleRoomGenerate(); 
 	connectRoom(_beginRoom); 
+
+	Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+	//状态条的更新
+	HPLoadingBar = ui::LoadingBar::create("Character/StatusBlood.png");
+	HPLoadingBar->setDirection(ui::LoadingBar::Direction::LEFT);
+	auto statusFrame = Sprite::create("Character/StatusBackground.png");
+	HPnum = Label::createWithTTF("0", "fonts/arial.ttf", 15);
+
+
+	statusFrame->setPosition(origin.x + 60, visibleSize.height + origin.y - 30);
+	HPLoadingBar->setPosition(Vec2(origin.x + 69, visibleSize.height + origin.y - 26));
+	HPnum->setPosition(Vec2(origin.x + 69, visibleSize.height + origin.y - 26));
+
+	this->addChild(statusFrame, 10);
+	this->addChild(HPLoadingBar, 10);
+	this->addChild(HPnum, 11);
+	//初始化图标
+	auto exitImg = MenuItemImage::create(
+		"exit.png",
+		"exit.png",
+		CC_CALLBACK_1(battleScene::menuCloseCallbackEnd, this));
+	exitImg->setScale(0.4f, 0.4f);
+
+	auto setImg = MenuItemImage::create(
+		"information.png",
+		"information.png",
+		CC_CALLBACK_1(battleScene::menuCloseCallbackSet, this));
+	setImg->setScale(0.2f, 0.2f);
+
+	auto exitMenu = Menu::create(exitImg, NULL);
+	auto setMenu = Menu::create(setImg, NULL);
+	exitMenu->setPosition(visibleSize.width + origin.x - 28, visibleSize.height + origin.y - 25);
+	setMenu->setPosition(visibleSize.width + origin.x - 75, visibleSize.height + origin.y - 25);
+	this->addChild(exitMenu, 50);
+	this->addChild(setMenu, 50);
+
 
 	//后期考虑将下述添加过程做函数拆分工作
 	//添加英雄并对其完成初始化
@@ -76,6 +122,7 @@ bool battleScene::init()
 	this->scheduleUpdate();
 	this->schedule(CC_SCHEDULE_SELECTOR(battleScene::updateMonsterAttack), 1.0f);
 	this->schedule(CC_SCHEDULE_SELECTOR(battleScene::updateHeroArmor), 1.0f);
+	this->schedule(CC_SCHEDULE_SELECTOR(battleScene::updateSkillCooling), 1.0f);
 
 	return true;
 }
@@ -86,6 +133,7 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 	monster* monster1;
 	bullet* bullet1;
 	Sprite* arrow1;
+	boss* boss1;
 	auto nodeA = contact.getShapeA()->getBody()->getNode();
 	auto nodeB = contact.getShapeB()->getBody()->getNode();
 	if (nodeA && nodeB)
@@ -122,16 +170,6 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 			if (monster1->isdead())
 			{
 				auto randdrop = drop::create();
-				//
-				//PhysicsBody* dropbody = PhysicsBody::createBox(randdrop->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
-				//dropbody->setGravityEnable(false);
-				//dropbody->setDynamic(false);
-				//dropbody->setCategoryBitmask(0x0001);
-				//dropbody->setCollisionBitmask(0x0001);
-				//dropbody->setContactTestBitmask(0x0001);
-				//randdrop->addComponent(dropbody);
-				//randdrop->setTag(5);
-				//
 				randdrop->setPosition(monster1->getPosition());
 				Hero->getCurBattleRoom()->addChild(randdrop);
 				monster1->removeAllComponents();
@@ -146,19 +184,9 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 			if (monster1->isdead())
 			{
 				auto randdrop = drop::create();
-				//
-				//PhysicsBody* dropbody = PhysicsBody::createBox(randdrop->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
-				//dropbody->setGravityEnable(false);
-				//dropbody->setDynamic(false);
-				//dropbody->setCategoryBitmask(0x0001);
-				//dropbody->setCollisionBitmask(0x0001);
-				//dropbody->setContactTestBitmask(0x0001);
-				//randdrop->addComponent(dropbody);
-				//randdrop->setTag(5);
-				//
-				//CCLOG("XX%f YY%f", monster1->getPositionX(), monster1->getPositionY());
+				CCLOG("XX%f YY%f", monster1->getPositionX(), monster1->getPositionY());
 				randdrop->setPosition(monster1->getPositionX(), monster1->getPositionY());
-				//CCLOG("XX%f YY%f", randdrop->getPositionX(), randdrop->getPositionY());
+				CCLOG("XX%f YY%f", randdrop->getPositionX(), randdrop->getPositionY());
 				Hero->getCurBattleRoom()->getVecdrop().pushBack(randdrop);
 				Hero->getCurBattleRoom()->addChild(randdrop);
 				monster1->removeAllComponents();
@@ -189,6 +217,56 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 			auto actionRemove = RemoveSelf::create();
 			arrow1->runAction(actionRemove);
 		}
+		else if (nodeA->getTag() == 9 && nodeB->getTag() == 3)
+		{
+			boss1 = dynamic_cast<boss*>(nodeA);
+			bullet1 = dynamic_cast<bullet*>(nodeB);
+			boss1->getdamage(bullet1->getdamage());
+			if (boss1->isdead())
+			{
+				auto randdrop = drop::create();
+				randdrop->setPosition(boss1->getPosition());
+				Hero->getCurBattleRoom()->addChild(randdrop);
+				boss1->removeAllComponents();
+			}
+			bullet1->removeAllComponents();
+		}
+		else if (nodeA->getTag() == 3 && nodeB->getTag() == 9)
+		{
+		boss1 = dynamic_cast<boss*>(nodeB);
+		bullet1 = dynamic_cast<bullet*>(nodeA);
+		boss1->getdamage(bullet1->getdamage());
+		if (boss1->isdead())
+		{
+			auto randdrop = drop::create();
+			randdrop->setPosition(boss1->getPosition());
+			Hero->getCurBattleRoom()->addChild(randdrop);
+			boss1->removeAllComponents();
+		}
+		bullet1->removeAllComponents();
+		}
+		else if (nodeA->getTag() == 1 && nodeB->getTag() == 10)
+		{
+		hero1 = dynamic_cast<hero*>(nodeA);
+		arrow1 = dynamic_cast<Sprite*>(nodeB);
+		hero1->getdamage(3);
+		if (hero1->isdead())
+			hero1->removeAllComponents();
+		arrow1->removeAllComponents();
+		auto actionRemove = RemoveSelf::create();
+		arrow1->runAction(actionRemove);
+		}
+		else if (nodeA->getTag() == 10 && nodeB->getTag() == 1)
+		{
+		hero1 = dynamic_cast<hero*>(nodeB);
+		arrow1 = dynamic_cast<Sprite*>(nodeA);
+		hero1->getdamage(3);
+		if (hero1->isdead())
+			hero1->removeAllComponents();
+		arrow1->removeAllComponents();
+		auto actionRemove = RemoveSelf::create();
+		arrow1->runAction(actionRemove);
+		}
 	}
 	return true;
 }
@@ -203,6 +281,8 @@ void battleScene::initEnemy()
 				continue;
 			if (curBattleRoom->_battleRoomType == TypeNormal)
 				curBattleRoom->createMonster();
+			else if (curBattleRoom->_battleRoomType == TypeBoss)
+				curBattleRoom->createBoss();
 		}
 }
 void battleScene::update(float delta)
@@ -212,8 +292,16 @@ void battleScene::update(float delta)
 	//updateBoundaryJudgement();
 	updateBattleScenePosition();
 	updateBattleRoomDoorState();
+	updateBossState();
 	updatePortalJudgement();
+	if (Hero->getCurBattleRoom() != nullptr || Hero->getCurCorridor() != nullptr)
+		updateUILoading();
+}
 
+void battleScene::updateUILoading()    //状态的更新
+{
+	HPLoadingBar->setPercent(this->Hero->getHP() * 10);
+	HPnum->setString(Value(this->Hero->getHP()).asString() + "/10");
 }
 
 //暂时只包括视野移动
@@ -414,12 +502,122 @@ void battleScene::updateMonsterAttack(float delta)
 			}
 		}
 	}
+	boss* nearboss = nullptr;
+	if (this->Hero->getCurBattleRoom() != nullptr)
+	{
+		for (boss* curBoss : this->Hero->getCurBattleRoom()->getVecBoss())
+		{
+			if (!curBoss->isdead())
+			{
+				int curBossType = curBoss->gettype();
+				if (curBossType == 0)
+				{
+					if (!Hero->isdead())
+					{
+						Vec2 enemyPos = curBoss->getPosition();
+						if (enemyPos.distance(curheropos) < curBoss->getAttackRange())
+						{
+							//判定不会冲出房间时野猪发动冲撞
+							float Xmin = curBoss->getAtBattleRoom()->getTopLeftCornerPositionX();
+							float Ymin = curBoss->getAtBattleRoom()->getLowerRightCornerPositionY();
+							float Xmax = curBoss->getAtBattleRoom()->getLowerRightCornerPositionX();
+							float Ymax = curBoss->getAtBattleRoom()->getTopLeftCornerPositionY();
+
+							float dstX;
+							float dstY;
+							float delat_x = Hero->getPositionX() - curBoss->getPositionX();
+							float delat_y = Hero->getPositionY() - curBoss->getPositionY();
+							if (delat_x != 0)
+							{
+								float tan = abs(delat_y / delat_x);
+								float t_2 = tan * tan;
+								float squr = 1 + t_2;
+								float length = sqrt(squr);
+								if (delat_x > 0)
+									dstX = 400 / length;
+								else
+									dstX = -400 / length;
+								if (delat_y > 0)
+									dstY = (400 / length) * tan;
+								else
+									dstY = -(400 / length) * tan;
+								dstX = dstX + curBoss->getPositionX();
+								dstY = dstY + curBoss->getPositionY();
+							}
+							else
+							{
+								dstX = curBoss->getPositionX();
+								if (delat_y > 0)
+									dstY = 400 + curBoss->getPositionY();
+								else
+									dstY = -400 + curBoss->getPositionY();
+							}
+							if (dstX >= Xmin && dstX <= Xmax && dstY >= Ymin && dstY <= Ymax)
+							{
+								Vec2 target = curheropos - curBoss->getPosition();
+								target.normalize();
+								target = target * 400;
+								auto moveby = MoveBy::create(1.0f, target);
+								curBoss->runAction(moveby);
+								int delta_x = target.x;
+								if (delta_x < 0)
+									curBoss->getSprite()->setFlippedX(true);
+								else if (delta_x > 0)
+									curBoss->getSprite()->setFlippedX(false);
+								else
+									;
+								curBoss->getSprite()->runAction(curBoss->boss_Frame_animation());
+							}
+						}
+					}
+				}
+				if (curBossType == 1)
+				{
+					Vec2 enemyPos = curBoss->getPosition();
+					if (!Hero->isdead())
+					{
+						if (enemyPos.distance(curheropos) < curBoss->getAttackRange())
+						{
+							Vec2 target1 = curheropos - curBoss->getPosition();
+							int delta_x = target1.x;
+							if (delta_x < 0)
+								curBoss->getSprite()->setFlippedX(true);
+							else if (delta_x > 0)
+								curBoss->getSprite()->setFlippedX(false);
+							else
+								;
+							auto arrow = Sprite::create("Bullet//fire.png");
+							PhysicsBody* arrowbody = PhysicsBody::createBox(arrow->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+							arrowbody->setGravityEnable(false);
+							arrowbody->setDynamic(false);
+							arrowbody->setCategoryBitmask(0x0001);
+							arrowbody->setCollisionBitmask(0x0001);
+							arrowbody->setContactTestBitmask(0x0001);
+							arrow->addComponent(arrowbody);
+							arrow->setTag(10);
+							int set_x = curBoss->getContentSize().width / 2;
+							int set_y = curBoss->getContentSize().height / 2;
+							arrow->setPosition(curBoss->getPositionX(), curBoss->getPositionY());
+							Hero->getCurBattleRoom()->addChild(arrow);
+							Vec2 target = curheropos - curBoss->getPosition();
+							target.normalize();
+							target = target * 600;
+							auto moveby = MoveBy::create(1.0f, target);
+							auto actionRemove = RemoveSelf::create();
+							arrow->runAction(Sequence::create(moveby, actionRemove, nullptr));
+							curBoss->getSprite()->runAction(curBoss->boss_Frame_animation());
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 void battleScene::updateBattleRoomDoorState()
 {
 	auto curBattleRoom = Hero->getCurBattleRoom();
-	if (curBattleRoom != nullptr)
+	if (curBattleRoom != nullptr && curBattleRoom->getBattleRoomType() == TypeNormal)
 	{
 		if (curBattleRoom->getIsClearance())
 			curBattleRoom->setDoorOpened();
@@ -439,7 +637,7 @@ void battleScene::updatePortalJudgement()
 
 		int num = battleScene::_battleSceneNumber;
 		num = num % 5 == 0 ? num / 5 : num / 5 + 1;
-		if (_battleSceneNumber == 5)
+		if (_battleSceneNumber - 1 == 5)
 		{
 			this->cleanup();
 			Director::getInstance()->replaceScene(TransitionFade::create(2.0f, secureRoom::createScene()));
@@ -452,6 +650,10 @@ void battleScene::updatePortalJudgement()
 		else
 		{
 			assert(battleScene::Hero->getParent() == nullptr);
+			battleScene::_heroStateType = this->Hero->getHeroType();
+			battleScene::_heroStateHP = this->Hero->getHP();
+			battleScene::_heroStateArmor = this->Hero->getArmor();
+			battleScene::_heroStateWeaponType = this->Hero->getCurWeapon()->getWeaponType();
 			this->cleanup();
 			this->removeAllChildren();           //释放
 			Director::getInstance()->replaceScene(TransitionFade::create(2.0f, battleScene::createBattleScene()));
@@ -487,7 +689,35 @@ void battleScene::updateHeroArmor(float delta)
 	else
 		if (Hero->getArmor() < Hero->getMaxArmor())
 			Hero->setArmor(Hero->getArmor() + 1);
-	CCLOG("Ar:%d", Hero->getArmor());
+	//CCLOG("Ar:%d", Hero->getArmor());
+}
+
+void battleScene::updateBossState()
+{
+	static bool isAdded = false;
+	auto curBattleRoom = Hero->getCurBattleRoom();
+	if(!isAdded)
+		if (curBattleRoom != nullptr && curBattleRoom->getBattleRoomType() == TypeBoss)
+		{
+			if (curBattleRoom->getIsClearance())
+			{
+				Sprite* portal = Sprite::create("Map//portal3.png");
+				portal->setPosition(Point(curBattleRoom->_centerX, curBattleRoom->_centerY));
+				curBattleRoom->addChild(portal);
+				portal->setGlobalZOrder(-1);
+
+				curBattleRoom->_portal = portal;
+				isAdded = true;
+				//后续可能添加奖励箱
+
+			}
+		}
+}
+
+void battleScene::updateSkillCooling(float delta)
+{
+	if (_skillCoolingTime <= 4)
+		_skillCoolingTime++;
 }
 
 void battleScene::nextRoomGenerate(int column, int row, battleRoom* curRoom, std::queue<battleRoom*>& roomQueue)
@@ -749,16 +979,16 @@ void battleScene::connectRoom(battleRoom* curRoom)
 		corridor->_direction = dir;
 
 		switch (dir) {
-		case RIGHT:
+		case m_RIGHT:
 			setCorridorWithWidth(corridor, curRoom, toRoom);
 			break;
-		case UP:
+		case m_UP:
 			setCorridorWithHeight(corridor, toRoom, curRoom);
 			break;
-		case LEFT:
+		case m_LEFT:
 			setCorridorWithWidth(corridor, toRoom, curRoom);
 			break;
-		case DOWN:
+		case m_DOWN:
 			setCorridorWithHeight(corridor, curRoom, toRoom);
 			break;
 		}
@@ -776,4 +1006,55 @@ void battleScene::connectRoom(battleRoom* curRoom)
 		// need to fix vis
 	}
 
+}
+
+void battleScene::menuCloseCallbackEnd(Ref* pSender)
+{
+	Director::getInstance()->replaceScene(TransitionFade::create(1.0f, initScene::createScene()));
+}
+//
+/*进入设置面板*/
+void battleScene::menuCloseCallbackSet(Ref* pSender)
+{
+	Scheduler* continueScheduler = Director::getInstance()->getScheduler();
+	continueScheduler->pauseTarget(this);
+	Director::getInstance()->pushScene(
+		TransitionFade::create(1.0f, settingScene::createScene()));
+	continueScheduler->resumeTarget(this);
+}
+
+void battleScene::randomBGM()
+{
+	srand((unsigned)time(NULL));
+	int bgm_rand = rand() % 9;
+	int BGM;
+	switch (bgm_rand) {
+	case 0:
+		BGM = AudioEngine::play2d("BGM/bgm_1High.mp3", false);
+		break;
+	case 1:
+		BGM = AudioEngine::play2d("BGM/bgm_1Low.mp3", false);
+		break;
+	case 2:
+		BGM = AudioEngine::play2d("BGM/bgm_2High.mp3", false);
+		break;
+	case 3:
+		BGM = AudioEngine::play2d("BGM/bgm_2Low.mp3", false);
+		break;
+	case 4:
+		BGM = AudioEngine::play2d("BGM/bgm_3High.mp3", false);
+		break;
+	case 5:
+		BGM = AudioEngine::play2d("BGM/bgm_3Low.mp3", false);
+		break;
+	case 6:
+		BGM = AudioEngine::play2d("BGM/bgm_4Low.mp3", false);
+		break;
+	case 7:
+		BGM = AudioEngine::play2d("BGM/bgm_5Low.mp3", false);
+		break;
+	case 8:
+		BGM = AudioEngine::play2d("BGM/bgm_6Low.mp3", false);
+		break;
+	}
 }

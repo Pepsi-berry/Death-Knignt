@@ -1,7 +1,9 @@
-#include "secureRoom.h"
 #include "ui/CocosGUI.h"
-//#include "hero.h"
+#include "secureRoom.h"
 #include "battleScene.h"
+#include "settingScene.h"
+#include "AudioEngine.h"
+#include "initScene.h"
 
 hero* battleScene::Hero = nullptr;
 int battleScene::_battleSceneNumber = 0;
@@ -9,7 +11,6 @@ int battleScene::_heroStateType = 0;
 int battleScene::_heroStateHP = 0;
 int battleScene::_heroStateArmor = 0;
 int battleScene::_heroStateWeaponType = 0;
-
 
 
 void secureRoom::truekeycode(EventKeyboard::KeyCode keycode)
@@ -124,8 +125,6 @@ void secureRoom::update(float delta)
 			battleScene::_heroStateHP = this->Hero->getHP();
 			battleScene::_heroStateArmor = this->Hero->getArmor();
 			battleScene::_heroStateWeaponType = this->Hero->getCurWeapon()->getWeaponType();
-
-
 			this->cleanup();
 			this->removeAllChildren();
 
@@ -138,6 +137,8 @@ bool secureRoom::init() {
 	if (!Scene::init()) {
 		return false;
 	}
+	AudioEngine::stopAll();
+	auto BGM = AudioEngine::play2d("BGM/bgm_room.mp3", false);
 	//创建地图
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	//获取安全屋大小
@@ -152,26 +153,30 @@ bool secureRoom::init() {
 
 	this->addChild(this->backGround, 0);
 
-	////设置与退出组件
-	//auto setImg = MenuItemImage::create(
-	//	"set.png",
-	//	"set.png",
-	//	CC_CALLBACK_1(SecureMap::menuCloseCallbackSet, this));
-	//auto exitImg = MenuItemImage::create(
-	//	"exit.png",
-	//	"exit.png",
-	//	CC_CALLBACK_1(SecureMap::menuCloseCallbackEnd, this));
+	// 血条的初始化
+	auto statusFrame = Sprite::create("Character/Status.png");
+	statusFrame->setPosition(origin.x + 60, visibleSize.height + origin.y - 30);
+	addChild(statusFrame, 1);
+	// 初始化图标
+	auto exitImg = MenuItemImage::create(
+		"exit.png",
+		"exit.png",
+		CC_CALLBACK_1(secureRoom::menuCloseCallbackEnd, this));
+	exitImg->setScale(0.4f, 0.4f);
 
-	//auto Menu_2 = Menu::create(setImg, NULL);
-	//auto Menu_3 = Menu::create(exitImg, NULL);
+	auto setImg = MenuItemImage::create(
+		"information.png",
+		"information.png",
+		CC_CALLBACK_1(secureRoom::menuCloseCallbackSet, this));
+	setImg->setScale(0.2f, 0.2f);
 
-	//Menu_2->setPosition(visibleSize.width + origin.x - 75, visibleSize.height + origin.y - 25);
-	//Menu_3->setPosition(visibleSize.width + origin.x - 28, visibleSize.height + origin.y - 25);
+	auto exitMenu = Menu::create(exitImg, NULL);
+	auto setMenu = Menu::create(setImg, NULL);
+	exitMenu->setPosition(visibleSize.width + origin.x - 28, visibleSize.height + origin.y - 25);
+	setMenu->setPosition(visibleSize.width + origin.x - 75, visibleSize.height + origin.y - 25);
+	this->addChild(exitMenu, 1);
+	this->addChild(setMenu, 1);
 
-	//this->addChild(Menu_2, 1);
-	//this->addChild(Menu_3, 1);
-	// 
-	// 
 	//英雄初始化
 	this->schedule(CC_SCHEDULE_SELECTOR(secureRoom::updatekeyboard), 0.01f);
 	this->scheduleUpdate();
@@ -181,25 +186,29 @@ bool secureRoom::init() {
 
 
 
-void secureRoom::menuCloseCallbackEnd(Ref* pSender) 
+void secureRoom::menuCloseCallbackEnd(Ref* pSender)
 {
-	Director::getInstance()->popScene();
+	Director::getInstance()->replaceScene(TransitionFade::create(1.0f, initScene::createScene()));
 }
 //
-///*进入设置面板*/
-//void secureRoom::menuCloseCallbackSet(Ref* pSender)
-//{
-//	Director::getInstance()->pushScene(TransitionFade::create(2.0f, settingScene::createScene()));
-//}
+/*进入设置面板*/
+void secureRoom::menuCloseCallbackSet(Ref* pSender)
+{
+	Scheduler* continueScheduler = Director::getInstance()->getScheduler();
+	continueScheduler->pauseTarget(this);
+	Director::getInstance()->pushScene(
+		TransitionFade::create(1.0f, settingScene::createScene()));
+	continueScheduler->resumeTarget(this);
+}
 
 bool secureRoom::isInDoor() {
 	float CurX = Hero->getPositionX(), CurY = Hero->getPositionY();
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	/*位置界定*/
-	if (CurX >= visibleSize.width/2-10 && CurX <= visibleSize.width / 2 + 50 && CurY >= visibleSize.height-70 && CurY <= visibleSize.width+40) {
+	if (CurX >= visibleSize.width / 2 - 10 && CurX <= visibleSize.width / 2 + 50 && CurY >= visibleSize.height - 70 && CurY <= visibleSize.width + 40) {
 		return 1;
 	}
-	else 
+	else
 	{
 		return 0;
 	}
