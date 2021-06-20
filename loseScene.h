@@ -1,9 +1,9 @@
-#ifndef _SETTING_SCENE_
-#define _SETTING_SCENE
+#ifndef _LOSE_SCENE_
+#define _LOSE_SCENE_
 
 #include "cocos2d.h"
 
-class settingScene : public cocos2d::Scene
+class loseScene : public cocos2d::Scene
 {
 public:
 	static cocos2d::Scene* createScene();
@@ -14,16 +14,15 @@ public:
 	void menuCloseCallbackChange(cocos2d::Ref* pSender);//改变音乐播放状态的回调函数
 	char* G2U(const char* gb2312);      //中文支持
 
-	CREATE_FUNC(settingScene);
+	CREATE_FUNC(loseScene);
 private:
 	//BGM开关
 	cocos2d::Menu* Menu_On;
 	cocos2d::Menu* Menu_Off;
 	cocos2d::Sprite* backGround;
-	int volume;
-	int audio;
 };
 
 
 
-#endif // !_SETTING_SCENE_
+#endif 
+

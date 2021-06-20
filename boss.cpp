@@ -98,6 +98,8 @@ bool boss::init() {
 		this->schedule(CC_SCHEDULE_SELECTOR(boss::move), 1.0f);
 		this->schedule(CC_SCHEDULE_SELECTOR(boss::updatedead), 0.01f);
 	}
+	this->setMaxHP(200);
+	this->setHP(200);
 	this->setTag(9);
 	return true;
 }

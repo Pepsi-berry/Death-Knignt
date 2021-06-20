@@ -4,6 +4,7 @@
 #include "settingScene.h"
 #include "initScene.h"
 #include <cmath>
+#include"loseScene.h"
 #include "AudioEngine.h"
 //#include "set_scene.h"
 
@@ -24,7 +25,6 @@ Scene* battleScene::createBattleScene()
 {
 	Scene* scene = Scene::createWithPhysics();
 	//设置Debug模式，你会看到物体的表面被线条包围，主要为了在调试中更容易地观察
-	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 	battleScene* layer = battleScene::create();
 	//把空间保持我们创建的层中，就是上面所说m_world的作用，方便后面设置空间的参数
 	layer->setPhyWorld(scene->getPhysicsWorld());
@@ -49,20 +49,66 @@ bool battleScene::init()
 
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
+	/*背景音乐*/
+
+	auto volumeUpLab = Label::createWithTTF("+", "fonts/arial.ttf", 36);
+	auto volumeDownLab = Label::createWithTTF("-", "fonts/arial.ttf", 36);
+	auto vol = Label::createWithTTF("BGM", "fonts/arial.ttf", 24);
+	auto volumeUpMenu = MenuItemLabel::create(volumeUpLab, CC_CALLBACK_1(battleScene::menuCloseCallbackVolumeUp, this));
+	auto volumeDownMenu = MenuItemLabel::create(volumeDownLab, CC_CALLBACK_1(battleScene::menuCloseCallbackVolumeDown, this));
+
+	MenuUpVolume = Menu::create(volumeUpMenu, NULL);
+	MenuDownVolume = Menu::create(volumeDownMenu, NULL);
+
+	MenuUpVolume->setPosition(visibleSize.width + origin.x - 120, visibleSize.height + origin.y - 25);
+	MenuDownVolume->setPosition(visibleSize.width + origin.x - 200, visibleSize.height + origin.y - 25);
+	vol->setPosition(visibleSize.width + origin.x - 160, visibleSize.height + origin.y - 25);
+	this->addChild(MenuUpVolume, 5);
+	this->addChild(MenuDownVolume, 5);
+	this->addChild(vol, 5);
+
 	//状态条的更新
 	HPLoadingBar = ui::LoadingBar::create("Character/StatusBlood.png");
 	HPLoadingBar->setDirection(ui::LoadingBar::Direction::LEFT);
 	auto statusFrame = Sprite::create("Character/StatusBackground.png");
 	HPnum = Label::createWithTTF("0", "fonts/arial.ttf", 15);
 
+	ARMORLoadingBar = ui::LoadingBar::create("Character/StatusArmor.png");
+	ARMORLoadingBar->setDirection(ui::LoadingBar::Direction::LEFT);
+	ARMORnum = Label::createWithTTF("0", "fonts/arial.ttf", 15);
+
+	MPLoadingBar = ui::LoadingBar::create("Character/StatusMP.png");
+	MPLoadingBar->setDirection(ui::LoadingBar::Direction::LEFT);
+	MPnum = Label::createWithTTF("0", "fonts/arial.ttf", 15);
+
+	COINnum = Label::createWithTTF("100", "fonts/arial.ttf", 22);
+	CoinPng = Sprite::create("Props/add_gold.png");
 
 	statusFrame->setPosition(origin.x + 60, visibleSize.height + origin.y - 30);
-	HPLoadingBar->setPosition(Vec2(origin.x + 69, visibleSize.height + origin.y - 26));
-	HPnum->setPosition(Vec2(origin.x + 69, visibleSize.height + origin.y - 26));
+	HPLoadingBar->setPosition(Vec2(origin.x + 69, visibleSize.height + origin.y - 10));
+	HPnum->setPosition(Vec2(origin.x + 69, visibleSize.height + origin.y - 10));
 
+	ARMORLoadingBar->setPosition(Vec2(origin.x + 69, visibleSize.height + origin.y - 27));
+	ARMORnum->setPosition(Vec2(origin.x + 69, visibleSize.height + origin.y - 27));
+
+	MPLoadingBar->setPosition(Vec2(origin.x + 69, visibleSize.height + origin.y - 44));
+	MPnum->setPosition(Vec2(origin.x + 69, visibleSize.height + origin.y - 44));
+
+	COINnum->setPosition(Vec2(origin.x + 200, visibleSize.height + origin.y - 30));
+	CoinPng->setPosition(Vec2(origin.x + 160, visibleSize.height + origin.y - 30));
 	this->addChild(statusFrame, 10);
-	this->addChild(HPLoadingBar, 10);
-	this->addChild(HPnum, 11);
+
+	this->addChild(HPLoadingBar, 65536);
+	this->addChild(ARMORLoadingBar, 65536);
+	this->addChild(MPLoadingBar, 65536);
+
+	this->addChild(HPnum, 65536);
+	this->addChild(ARMORnum, 65536);
+	this->addChild(MPnum, 65536);
+
+	this->addChild(COINnum, 65536);
+	this->addChild(CoinPng, 65536);
+
 	//初始化图标
 	auto exitImg = MenuItemImage::create(
 		"exit.png",
@@ -179,6 +225,7 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 				if (rand() % 20 == 0)
 				{
 					auto randdrop = drop::create();
+					randdrop->changetype(rand() % 3);
 					randdrop->setPosition(monster1->getPosition());
 					Hero->getCurBattleRoom()->getVecdrop().pushBack(randdrop);
 					Hero->getCurBattleRoom()->addChild(randdrop);
@@ -200,6 +247,7 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 				if (rand() % 20 == 0)
 				{
 					auto randdrop = drop::create();
+					randdrop->changetype(rand() % 3);
 					randdrop->setPosition(monster1->getPosition());
 					Hero->getCurBattleRoom()->getVecdrop().pushBack(randdrop);
 					Hero->getCurBattleRoom()->addChild(randdrop);
@@ -242,28 +290,26 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 			boss1->getdamage(bullet1->getdamage());
 			if (boss1->isdead())
 			{
-				auto randdrop = drop::create();
-				randdrop->setPosition(boss1->getPosition());
-				Hero->getCurBattleRoom()->addChild(randdrop);
 				Hero->addCoin(rand() % 10 + 10);
 				boss1->removeAllComponents();
 			}
 			bullet1->removeAllComponents();
+			auto actionRemove = RemoveSelf::create();
+			bullet1->runAction(actionRemove);
 		}
 		else if (nodeA->getTag() == 3 && nodeB->getTag() == 9)
 		{
-		boss1 = dynamic_cast<boss*>(nodeB);
-		bullet1 = dynamic_cast<bullet*>(nodeA);
-		boss1->getdamage(bullet1->getdamage());
-		if (boss1->isdead())
-		{
-			auto randdrop = drop::create();
-			randdrop->setPosition(boss1->getPosition());
-			Hero->getCurBattleRoom()->addChild(randdrop);
-			Hero->addCoin(rand() % 10 + 10);
-			boss1->removeAllComponents();
-		}
-		bullet1->removeAllComponents();
+			boss1 = dynamic_cast<boss*>(nodeB);
+			bullet1 = dynamic_cast<bullet*>(nodeA);
+			boss1->getdamage(bullet1->getdamage());
+			if (boss1->isdead())
+			{
+				Hero->addCoin(rand() % 10 + 10);
+				boss1->removeAllComponents();
+			}
+			bullet1->removeAllComponents();
+			auto actionRemove = RemoveSelf::create();
+			bullet1->runAction(actionRemove);
 		}
 		else if (nodeA->getTag() == 1 && nodeB->getTag() == 10)
 		{
@@ -286,6 +332,22 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 		arrow1->removeAllComponents();
 		auto actionRemove = RemoveSelf::create();
 		arrow1->runAction(actionRemove);
+		}
+		else if (nodeA->getTag() == 1 && nodeB->getTag() == 9)
+		{
+		hero1 = dynamic_cast<hero*>(nodeA);
+		boss1 = dynamic_cast<boss*>(nodeB);
+		hero1->getdamage(3);
+		if (hero1->isdead())
+			hero1->removeAllComponents();
+		}
+		else if (nodeA->getTag() == 9 && nodeB->getTag() == 1)
+		{
+		hero1 = dynamic_cast<hero*>(nodeB);
+		boss1 = dynamic_cast<boss*>(nodeA);
+		hero1->getdamage(3);
+		if (hero1->isdead())
+			hero1->removeAllComponents();
 		}
 	}
 	return true;
@@ -320,8 +382,13 @@ void battleScene::update(float delta)
 
 void battleScene::updateUILoading()    //状态的更新
 {
-	HPLoadingBar->setPercent(this->Hero->getHP() * 100 / this->Hero->getMaxHP());
-	HPnum->setString(Value(this->Hero->getHP()).asString() + "/" + Value(this->Hero->getMaxHP()).asString());
+	HPLoadingBar->setPercent(float(this->Hero->getHP())/float(this->Hero->getMaxHP())*100.0f);
+	HPnum->setString(Value(this->Hero->getHP()).asString());
+	ARMORLoadingBar->setPercent(float(this->Hero->getArmor()) / float(this->Hero->getMaxArmor()) * 100.0f);
+	ARMORnum->setString(Value(this->Hero->getArmor()).asString());
+	MPLoadingBar->setPercent(float(this->Hero->getMP()) / float(this->Hero->getMaxMP()) * 100.0f);
+	MPnum->setString(Value(this->Hero->getMP()).asString());
+	COINnum->setString(Value(this->Hero->getCoin()).asString());
 }
 
 //暂时只包括视野移动
@@ -496,7 +563,7 @@ void battleScene::updateMonsterAttack(float delta)
 								;
 							if (curMonsterType == 1)
 							{
-								auto arrow = Sprite::create("Bullet//bullet_1.png");
+								auto arrow = Sprite::create("Bullet//bullet2.png");
 								PhysicsBody* arrowbody = PhysicsBody::createBox(arrow->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
 								arrowbody->setGravityEnable(false);
 								arrowbody->setDynamic(false);
@@ -851,7 +918,7 @@ void battleScene::updateGameLose()
 		auto callFunc = CallFunc::create([&]() {
 			Hero->removeFromParent();
 			Director::getInstance()->replaceScene(
-				TransitionFade::create(2.0f, secureRoom::createScene()));
+				TransitionFade::create(2.0f, loseScene::createScene()));
 			});
 
 		Hero->runAction(Sequence::create(callFunc, NULL));
@@ -879,14 +946,19 @@ void battleScene::updateBossState()
 		{
 			if (curBattleRoom->getIsClearance())
 			{
-				Sprite* portal = Sprite::create("Map//portal3.png");
-				portal->setPosition(Point(curBattleRoom->_centerX, curBattleRoom->_centerY));
-				curBattleRoom->addChild(portal);
-				portal->setGlobalZOrder(-1);
-
-				curBattleRoom->_portal = portal;
-				isAdded = true;
-				//后续可能添加奖励箱
+				if (curBattleRoom->getIsClearance())
+				{
+					auto visibleSize = Director::getInstance()->getVisibleSize();
+					Sprite* portal = Sprite::create("Map//portal3.png");
+					auto Congratulations = Sprite::create("Congratulations.png");
+					Congratulations->setPosition(visibleSize.width / 2, visibleSize.height / 4 * 3);
+					portal->setPosition(Point(curBattleRoom->_centerX, curBattleRoom->_centerY));
+					curBattleRoom->addChild(portal);
+					portal->setGlobalZOrder(-1);
+					this->addChild(Congratulations, 5);
+					curBattleRoom->_portal = portal;
+					isAdded = true;
+				}
 
 			}
 		}
@@ -1205,34 +1277,51 @@ void battleScene::randomBGM()
 {
 	srand((unsigned)time(NULL));
 	int bgm_rand = rand() % 9;
-	int BGM;
+	BGM;
 	switch (bgm_rand) {
 	case 0:
-		BGM = AudioEngine::play2d("BGM/bgm_1High.mp3", false);
+		BGM = AudioEngine::play2d("BGM/bgm_1High.mp3", true);
 		break;
 	case 1:
-		BGM = AudioEngine::play2d("BGM/bgm_1Low.mp3", false);
+		BGM = AudioEngine::play2d("BGM/bgm_1Low.mp3", true);
 		break;
 	case 2:
-		BGM = AudioEngine::play2d("BGM/bgm_2High.mp3", false);
+		BGM = AudioEngine::play2d("BGM/bgm_2High.mp3", true);
 		break;
 	case 3:
-		BGM = AudioEngine::play2d("BGM/bgm_2Low.mp3", false);
+		BGM = AudioEngine::play2d("BGM/bgm_2Low.mp3", true);
 		break;
 	case 4:
-		BGM = AudioEngine::play2d("BGM/bgm_3High.mp3", false);
+		BGM = AudioEngine::play2d("BGM/bgm_3High.mp3", true);
 		break;
 	case 5:
-		BGM = AudioEngine::play2d("BGM/bgm_3Low.mp3", false);
+		BGM = AudioEngine::play2d("BGM/bgm_3Low.mp3", true);
 		break;
 	case 6:
-		BGM = AudioEngine::play2d("BGM/bgm_4Low.mp3", false);
+		BGM = AudioEngine::play2d("BGM/bgm_4Low.mp3", true);
 		break;
 	case 7:
-		BGM = AudioEngine::play2d("BGM/bgm_5Low.mp3", false);
+		BGM = AudioEngine::play2d("BGM/bgm_5Low.mp3", true);
 		break;
 	case 8:
-		BGM = AudioEngine::play2d("BGM/bgm_6Low.mp3", false);
+		BGM = AudioEngine::play2d("BGM/bgm_6Low.mp3", true);
 		break;
 	}
+}
+
+
+/*升高音量*/
+void battleScene::menuCloseCallbackVolumeUp(Ref* pSender) {
+	auto volume = AudioEngine::getVolume(BGM);
+	/*修改音量*/
+	AudioEngine::setVolume(BGM, volume + 0.05f);
+
+}
+
+/*降低音量*/
+void battleScene::menuCloseCallbackVolumeDown(Ref* pSender) {
+	auto volume = AudioEngine::getVolume(BGM);
+	/*修改音量*/
+	AudioEngine::setVolume(BGM, volume - 0.05f);
+
 }

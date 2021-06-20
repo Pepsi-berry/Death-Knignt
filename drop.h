@@ -12,11 +12,11 @@ public:
 	~drop();
 	CREATE_FUNC(drop);
 
+	void changetype(int changeType);
+
 	void bindSprite(Sprite* sprite);
 
 	virtual bool init();
-
-	int getmydamage()const;
 
 	void propsUsing(hero* Hero);
 

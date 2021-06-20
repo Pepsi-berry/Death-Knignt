@@ -18,7 +18,7 @@ void weapon::changeWeapon(int changeType)
 	{
 		//大剑
 		auto curWeapon = Sprite::create("BigKnife1.png");
-		this->weaponInit(0, 5, 80, 0);
+		this->weaponInit(0, 3, 120, 0);
 		_weaponPrice = 40 + rand() % 12;
 		bindSprite(curWeapon);
 	}
@@ -33,9 +33,17 @@ void weapon::changeWeapon(int changeType)
 	if (_weaponType == 3)
 	{
 		//范围伤法杖
-		auto curWeapon = Sprite::create("Weapon//BigKnife2-1.png");
+		auto curWeapon = Sprite::create("Weapon//weapon_4.png");
 		this->weaponInit(0, 2, 400, 5);
 		_weaponPrice = 50 + rand() % 20;
+		bindSprite(curWeapon);
+	}
+	if (_weaponType == 4)
+	{
+		//近战黄金锤
+		auto curWeapon = Sprite::create("Weapon//BigKnife2-1.png");
+		this->weaponInit(0, 4, 160, 0);
+		_weaponPrice = 35 + rand() % 20;
 		bindSprite(curWeapon);
 	}
 }
@@ -54,7 +62,7 @@ Animate* weapon::wea_Frame_animation()
 			sword_frame_animation->addSpriteFrameWithFile(namesize);
 		}
 	}
-	if (_weaponType == 3)
+	if (_weaponType == 4)
 	{
 		for (int i = 1; i < 5; i++)
 		{
@@ -63,7 +71,7 @@ Animate* weapon::wea_Frame_animation()
 		}
 	}
 
-	sword_frame_animation->setDelayPerUnit(0.01f);
+	sword_frame_animation->setDelayPerUnit(0.05f);
 
 	sword_frame_animation->setLoops(1);
 
@@ -97,7 +105,7 @@ void weapon::bindSprite(Sprite* sprite)
 	setPosition(Point(.0f, .0f));
 
 	this->addChild(_weaponSprite);
-	if(_weaponType == 1 || _weaponType == 3)
+	if(_weaponType == 1 || _weaponType == 3|| _weaponType == 4)
 		this->_weaponSprite->setPosition(Point(size.width / 2, size.height / 2));
 	if (_weaponType == 0 || _weaponType == 2)
 		this->_weaponSprite->setPosition(Point(size.width / 2, size.height / 4));
@@ -113,7 +121,7 @@ bool weapon::init()
 
 void weapon::setWeaponType()
 {
-	int random = rand() % 4;
+	int random = rand() % 5;
 	_weaponType = random;
 }
 
