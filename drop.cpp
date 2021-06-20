@@ -32,16 +32,19 @@ bool drop::init()
 	if (curtype == 0)
 	{
 		auto curdrop = Sprite::create("Props//add_gold.png");
+		_dropPrice = 0;
 		bindSprite(curdrop);
 	}
 	if (curtype == 1)
 	{
 		auto curdrop = Sprite::create("Props//add_HP.png");
+		_dropPrice = 20 + rand() % 10;
 		bindSprite(curdrop);
 	}
 	if (curtype == 2)
 	{
 		auto curdrop = Sprite::create("Props//add_MP.png");
+		_dropPrice = 15 + rand() % 7;
 		bindSprite(curdrop);
 	}
 	return true;
@@ -56,4 +59,21 @@ void drop::settype()
 int drop::gettype()const
 {
 	return _dropType;
+}
+
+void drop::propsUsing(hero* Hero)
+{
+	if (_dropType == 0)
+		Hero->addCoin(10);
+	else if (_dropType == 1)
+		Hero->getdamage(-2);
+	else if (_dropType == 2)
+	{
+		auto curMP = Hero->getMP();
+		auto curMaxMP = Hero->getMaxMP();
+		if (curMP + 80 <= curMaxMP)
+			Hero->setMP(curMP + 80);
+		else
+			Hero->setMP(curMaxMP);
+	}
 }

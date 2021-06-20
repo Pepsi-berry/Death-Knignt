@@ -32,14 +32,22 @@ public:
 	void setattackRange(float range);
 	float getattackRange()const;
 
-	void weaponInit(float speed, int damage,float attackrange);
+	void setMPCost(int MPCost) { _MPCost = MPCost; }
+	int getMPCost() { return _MPCost; }
+
+	void setWeaponPrice(int weaponPrice) { _weaponPrice = weaponPrice; }
+	int getWeaponPrice() { return _weaponPrice; }
+
+	void weaponInit(float speed, int damage, float attackrange, int MPCost);
 
 	Animate* wea_Frame_animation();
 protected:
 	Sprite* _weaponSprite;
 	int _weaponType;
+	int _MPCost;
 	float _fireSpeed;
 	int _damage;
 	float _attackRange;
+	int _weaponPrice;
 };
 #endif;

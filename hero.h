@@ -31,6 +31,8 @@ public:
 	void truekeycode(EventKeyboard::KeyCode Keycode);
 	void falsekeycode(EventKeyboard::KeyCode Keycode);
 
+	void updateWeaponDisplayStatus();
+
 	void setMaxArmor(int maxarmor);
 	int getMaxArmor() const;
 	void setArmor(int armor);
@@ -50,13 +52,31 @@ public:
 	void setIsFinished(bool isFinished) { _isFinished = isFinished; }
 	bool getIsFinished() { return _isFinished; }
 
+	void setMP(int MP) { _MP = MP; }
+	int getMP() { return _MP; }
+	void setMaxMP(int maxMP) { _maxMP = maxMP; }
+	int getMaxMP() { return _maxMP; }
+	void setCoin(int coin) { _coin = coin; }
+	void addCoin(int deltaCoin);
+	int getCoin() { return _coin; }
+	void setCurWeaponType(int curWeaponType) { _curWeaponType = curWeaponType; }
+	int getCurWeaponType() { return _curWeaponType; }
+	void setSecondaryWeaponType(int SecondaryWeaponType) { _secondaryWeaponType = SecondaryWeaponType; }
+	int getSecondaryWeaponType() { return _secondaryWeaponType; }
+
 	virtual void getdamage(int damage);
+
+	void pickUpWeapon(weapon* pickedWeapon);
+
+	void changeWeapon();
 
 	void initmem();
 
-	void bindWeapon(weapon* weapon);
+	void bindWeapon();
+	//void bindSecondaryWeapon(weapon* secondaryWeapon) { _secondaryWeapon = secondaryWeapon; }
+	//void bindSecondaryWeapon(weapon* weapon);
 	weapon* getCurWeapon();
-	int getWeaponType()const;
+	int getWeaponType();
 
 	Animate* Frame_animation_rest();
 	Animate* Frame_animation_attack();
@@ -72,11 +92,18 @@ protected:
 	room* _curCorridor;
 	weapon* _curWeapon;
 	weapon* _secondaryWeapon;
+	weapon* _thirdWeapon;
+	weapon* _fourthWeapon;
 
-
+	int _MP;
+	int _maxMP;
 	int _armor=0;
 	int _armorMax;
+	int _coin;
+	int _curWeaponType;
+	int _secondaryWeaponType;
 	bool _isFinished;
 	bool _canAttack;
+	bool _canChange;
 };
 #endif

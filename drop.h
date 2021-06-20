@@ -1,4 +1,5 @@
 #include "cocos2d.h"
+#include "hero.h"
 
 USING_NS_CC;
 
@@ -17,13 +18,17 @@ public:
 
 	int getmydamage()const;
 
+	void propsUsing(hero* Hero);
+
 	void settype();
 	int gettype()const;
+	int getDropPrice() { return _dropPrice; }
 	void setIsUsed(bool isUsed) { _isUsed = isUsed; }
 	bool getIsUsed() { return _isUsed; }
 
 protected:
 	int _dropType;
+	int _dropPrice;
 	bool _isUsed;
 	Sprite* _dropsprite;
 };

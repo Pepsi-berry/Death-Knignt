@@ -24,7 +24,6 @@ bool battleRoom::init()
 
 void battleRoom::update(float delta)
 {
-
 }
 
 void battleRoom::generateDoorMaping(float positionX, float positionY, int layer)
@@ -123,9 +122,10 @@ void battleRoom::createBattleRoomMaping()
 	srand(time(nullptr));
 
 	//if (_battleRoomType == TypeEnd || _battleRoomType ==TypeWeapon  || roomType == TypeProp)
-	if (_battleRoomType == TypeEnd || _battleRoomType ==TypeBox)
+	if (_battleRoomType == TypeEnd || _battleRoomType == TypeBox)
 	{
-		_sizeX -= 6, _sizeY -= 6;
+		_sizeX -= 6;
+		_sizeY -= 6;
 
 		if (_battleRoomType == TypeEnd)
 		{  //设置房间大小以及传送门
@@ -138,12 +138,31 @@ void battleRoom::createBattleRoomMaping()
 			this->_portal = portal;
 		}
 	}
+	else if (_battleRoomType == TypeStore)
+	{
+		_sizeX += 6;
+		_sizeY -= 6;
+
+		auto prop1 = drop::create();
+		prop1->setPosition(Point(_centerX - 200, _centerY));
+		this->addChild(prop1);
+		_vecDrop.pushBack(prop1);
+		auto prop2 = drop::create();
+		prop2->setPosition(Point(_centerX, _centerY));
+		this->addChild(prop2);
+		_vecDrop.pushBack(prop2);
+		weapon* weaponForSale = weapon::create();
+		weaponForSale->changeWeapon(rand() % 4);
+		weaponForSale->setPosition(Point(_centerX + 200, _centerY));
+		this->addChild(weaponForSale);
+		_vecWeapon.pushBack(weaponForSale);
+	}
 	else if (_battleRoomType == TypeBoss)
 	{
-		_sizeX += 6, _sizeY += 6;
+		_sizeX += 6;
+		_sizeY += 6;
 	}
 
-	//addMapElement   添加地图元素 : 地板 墙 门
 	const float X = _centerX - WIDTHOFFLOOR * (_sizeX / 2);
 	const float Y = _centerY + HEIGHTOFFLOOR * (_sizeY / 2);
 	//(X, Y) is upLeft Position;
@@ -153,7 +172,7 @@ void battleRoom::createBattleRoomMaping()
 	_lowerRightCornerPositionX = X + WIDTHOFFLOOR * (_sizeX - 2);
 	_lowerRightCornerPositionY = Y - HEIGHTOFFLOOR * (_sizeY - 2);
 
-	CCLOG("%f,%f", _centerX, _centerY);
+	//CCLOG("%f,%f", _centerX, _centerY);
 	//CCLOG("%d,%d", X, Y);
 	//CCLOG("%d,%d", _topLeftCornerPositionX, _lowerRightCornerPositionX);
 	float curX = X, curY = Y;
@@ -370,7 +389,19 @@ drop* battleRoom::checkNearbyDrop(hero* Hero)
 	return nullptr;
 }
 
-void battleRoom::openChest(hero* Hero)
+weapon* battleRoom::checkNearbyWeapon(hero* Hero)
+{
+	for (auto curWeapon : _vecWeapon)
+	{
+		Rect dropRect = curWeapon->getBoundingBox();
+		Rect heroRect = Hero->getBoundingBox();
+		if (dropRect.intersectsRect(heroRect))
+			return curWeapon;
+	}
+	return nullptr;
+}
+
+bool battleRoom::openChest(hero* Hero)
 {
 	auto curChest = checkNearbyChest(Hero);
 	if (curChest != nullptr)
@@ -379,7 +410,9 @@ void battleRoom::openChest(hero* Hero)
 		randdrop->setPosition(curChest->getPosition());
 		_vecDrop.pushBack(randdrop);
 		this->addChild(randdrop);
+		return true;
 	}
+	return false;
 
 }
 

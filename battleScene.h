@@ -102,8 +102,11 @@ private:
 	//储存英雄的状态信息,完成不同场景之间的传递
 	static int _heroStateType;
 	static int _heroStateHP;
+	static int _heroStateMP;
 	static int _heroStateArmor;
-	static int _heroStateWeaponType;
+	static int _heroStateCoin;
+	static int _heroStateCurWeaponType;
+	static int _heroStateSecondaryWeaponType;
 
 
 	int countForRoom;

@@ -7,6 +7,16 @@ int bullet::getdamage()const
 	return this->_damage;
 }
 
+void bullet::bindWeapon(weapon* weapon)
+{
+	this->_curWeapon = weapon;
+}
+
+weapon* bullet::getweapon()const
+{
+	return this->_curWeapon;
+}
+
 void bullet::bindSprite(Sprite* bulletSprite)
 {
 	this->s_bullet = bulletSprite;
@@ -57,7 +67,24 @@ float bullet::getBulletSpeed()
 
 bool bullet::init()
 {
-	auto t_bullet = Sprite::create("Bullet//bigBullet.png");
-	bindSprite(t_bullet);
 	return true;
+}
+
+void bullet::fullcreate()
+{
+	if (_curWeapon->getWeaponType() == 0)
+	{
+		auto t_bullet = Sprite::create("Bullet//bigBullet.png");
+		bindSprite(t_bullet);
+	}
+	if (_curWeapon->getWeaponType() == 2)
+	{
+		auto t_bullet = Sprite::create("Bullet//bullet2.png");
+		bindSprite(t_bullet);
+	}
+	if (_curWeapon->getWeaponType() == 3)
+	{
+		auto t_bullet = Sprite::create("Bullet//bullet_last.png");
+		bindSprite(t_bullet);
+	}
 }

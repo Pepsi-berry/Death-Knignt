@@ -90,7 +90,11 @@ bool battleScene::init()
 	Hero->setHeroType(_heroStateType);
 	Hero->initmem();
 	Hero->setHP(_heroStateHP);
+	Hero->setMP(_heroStateMP);
 	Hero->setArmor(_heroStateArmor);
+	Hero->setCoin(_heroStateCoin);
+	Hero->setCurWeaponType(_heroStateCurWeaponType);
+	Hero->setSecondaryWeaponType(_heroStateSecondaryWeaponType);
 	Hero->bindscene(this);
 	Hero->setPosition(Point(visibleSize.width / 2, visibleSize.height / 2));
 	PhysicsBody* herobody = PhysicsBody::createBox(Hero->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
@@ -107,9 +111,12 @@ bool battleScene::init()
 	Hero->setPosition(Point(visibleSize.width / 2, visibleSize.height / 2));
 	// add knight to scene
 
-	auto myweapon = weapon::create();
-	myweapon->changeWeapon(_heroStateWeaponType);
-	Hero->bindWeapon(myweapon);
+	//auto myweapon = weapon::create();
+	//myweapon->changeWeapon(_heroStateWeaponType);
+	//auto myweapon2 = weapon::create();
+	//myweapon2->changeWeapon(3);
+	Hero->bindWeapon();
+	//Hero->bindSecondaryWeapon(myweapon2);
 	this->addChild(Hero, 0);
 
 
@@ -169,12 +176,19 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 			monster1->getdamage(bullet1->getdamage());
 			if (monster1->isdead())
 			{
-				auto randdrop = drop::create();
-				randdrop->setPosition(monster1->getPosition());
-				Hero->getCurBattleRoom()->addChild(randdrop);
+				if (rand() % 20 == 0)
+				{
+					auto randdrop = drop::create();
+					randdrop->setPosition(monster1->getPosition());
+					Hero->getCurBattleRoom()->getVecdrop().pushBack(randdrop);
+					Hero->getCurBattleRoom()->addChild(randdrop);
+				}
+				Hero->addCoin(rand() % 4);
 				monster1->removeAllComponents();
 			}
 			bullet1->removeAllComponents();
+			auto actionRemove = RemoveSelf::create();
+			bullet1->runAction(actionRemove);
 		}
 		else if (nodeA->getTag() == 3 && nodeB->getTag() == 2)
 		{
@@ -183,15 +197,19 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 			monster1->getdamage(bullet1->getdamage());
 			if (monster1->isdead())
 			{
-				auto randdrop = drop::create();
-				CCLOG("XX%f YY%f", monster1->getPositionX(), monster1->getPositionY());
-				randdrop->setPosition(monster1->getPositionX(), monster1->getPositionY());
-				CCLOG("XX%f YY%f", randdrop->getPositionX(), randdrop->getPositionY());
-				Hero->getCurBattleRoom()->getVecdrop().pushBack(randdrop);
-				Hero->getCurBattleRoom()->addChild(randdrop);
+				if (rand() % 20 == 0)
+				{
+					auto randdrop = drop::create();
+					randdrop->setPosition(monster1->getPosition());
+					Hero->getCurBattleRoom()->getVecdrop().pushBack(randdrop);
+					Hero->getCurBattleRoom()->addChild(randdrop);
+				}
+				Hero->addCoin(rand() % 4);
 				monster1->removeAllComponents();
 			}
 			bullet1->removeAllComponents();
+			auto actionRemove = RemoveSelf::create();
+			bullet1->runAction(actionRemove);
 		}
 		else if (nodeA->getTag() == 1 && nodeB->getTag() == 4)
 		{
@@ -227,6 +245,7 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 				auto randdrop = drop::create();
 				randdrop->setPosition(boss1->getPosition());
 				Hero->getCurBattleRoom()->addChild(randdrop);
+				Hero->addCoin(rand() % 10 + 10);
 				boss1->removeAllComponents();
 			}
 			bullet1->removeAllComponents();
@@ -241,6 +260,7 @@ bool battleScene::onContactBegin(cocos2d::PhysicsContact& contact)
 			auto randdrop = drop::create();
 			randdrop->setPosition(boss1->getPosition());
 			Hero->getCurBattleRoom()->addChild(randdrop);
+			Hero->addCoin(rand() % 10 + 10);
 			boss1->removeAllComponents();
 		}
 		bullet1->removeAllComponents();
@@ -300,8 +320,8 @@ void battleScene::update(float delta)
 
 void battleScene::updateUILoading()    //状态的更新
 {
-	HPLoadingBar->setPercent(this->Hero->getHP() * 10);
-	HPnum->setString(Value(this->Hero->getHP()).asString() + "/10");
+	HPLoadingBar->setPercent(this->Hero->getHP() * 100 / this->Hero->getMaxHP());
+	HPnum->setString(Value(this->Hero->getHP()).asString() + "/" + Value(this->Hero->getMaxHP()).asString());
 }
 
 //暂时只包括视野移动
@@ -392,7 +412,7 @@ void battleScene::updateMonsterAttack(float delta)
 			if (!curMonster->isdead())
 			{
 				int curMonsterType = curMonster->gettype();
-				if (curMonsterType == 0)
+				if (curMonsterType == 0|| curMonsterType == 2)
 				{
 					if (!Hero->isdead())
 					{
@@ -418,13 +438,13 @@ void battleScene::updateMonsterAttack(float delta)
 								float squr = 1 + t_2;
 								float length = sqrt(squr);
 								if (delat_x > 0)
-									dstX = 200 / length;
+									dstX = curMonster->getAttackRange() / length;
 								else
-									dstX = -200 / length;
+									dstX = -(curMonster->getAttackRange()) / length;
 								if (delat_y > 0)
-									dstY = (200 / length) * tan;
+									dstY = (curMonster->getAttackRange() / length) * tan;
 								else
-									dstY = -(200 / length) * tan;
+									dstY = -(curMonster->getAttackRange() / length) * tan;
 								dstX = dstX + curMonster->getPositionX();
 								dstY = dstY + curMonster->getPositionY();
 							}
@@ -432,16 +452,16 @@ void battleScene::updateMonsterAttack(float delta)
 							{
 								dstX = curMonster->getPositionX();
 								if (delat_y > 0)
-									dstY = 200 + curMonster->getPositionY();
+									dstY = curMonster->getAttackRange() + curMonster->getPositionY();
 								else
-									dstY = -200 + curMonster->getPositionY();
+									dstY = -(curMonster->getAttackRange()) + curMonster->getPositionY();
 							}
 							if (dstX >= Xmin && dstX <= Xmax && dstY >= Ymin && dstY <= Ymax)
 							{
 								curMonster->canattack = true;
 								Vec2 target = curheropos - curMonster->getPosition();
 								target.normalize();
-								target = target * 200;
+								target = target * curMonster->getAttackRange();
 								auto moveby = MoveBy::create(1.0f, target);
 								curMonster->runAction(moveby);
 								int delta_x = target.x;
@@ -458,7 +478,7 @@ void battleScene::updateMonsterAttack(float delta)
 							curMonster->canattack = false;
 					}
 				}
-				if (curMonsterType == 1)
+				if (curMonsterType == 1|| curMonsterType == 3)
 				{
 					Vec2 enemyPos = curMonster->getPosition();
 					if (!Hero->isdead())
@@ -474,26 +494,53 @@ void battleScene::updateMonsterAttack(float delta)
 								curMonster->getSprite()->setFlippedX(false);
 							else
 								;
-							auto arrow = Sprite::create("Bullet//bullet_1.png");
-							PhysicsBody* arrowbody = PhysicsBody::createBox(arrow->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
-							arrowbody->setGravityEnable(false);
-							arrowbody->setDynamic(false);
-							arrowbody->setCategoryBitmask(0x0001);
-							arrowbody->setCollisionBitmask(0x0001);
-							arrowbody->setContactTestBitmask(0x0001);
-							arrow->addComponent(arrowbody);
-							arrow->setTag(4);
-							int set_x = curMonster->getContentSize().width / 2;
-							int set_y = curMonster->getContentSize().height / 2;
-							arrow->setPosition(curMonster->getPositionX(), curMonster->getPositionY());
-							Hero->getCurBattleRoom()->addChild(arrow);
-							Vec2 target = curheropos - curMonster->getPosition();
-							target.normalize();
-							target = target * 400;
-							auto moveby = MoveBy::create(2.0f, target);
-							auto actionRemove = RemoveSelf::create();
-							arrow->runAction(Sequence::create(moveby, actionRemove, nullptr));
-							curMonster->getSprite()->runAction(curMonster->mons_Frame_animation());
+							if (curMonsterType == 1)
+							{
+								auto arrow = Sprite::create("Bullet//bullet_1.png");
+								PhysicsBody* arrowbody = PhysicsBody::createBox(arrow->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+								arrowbody->setGravityEnable(false);
+								arrowbody->setDynamic(false);
+								arrowbody->setCategoryBitmask(0x0001);
+								arrowbody->setCollisionBitmask(0x0001);
+								arrowbody->setContactTestBitmask(0x0001);
+								arrow->addComponent(arrowbody);
+								arrow->setTag(4);
+								int set_x = curMonster->getContentSize().width / 2;
+								int set_y = curMonster->getContentSize().height / 2;
+								arrow->setPosition(curMonster->getPositionX(), curMonster->getPositionY());
+								Hero->getCurBattleRoom()->addChild(arrow);
+								Vec2 target = curheropos - curMonster->getPosition();
+								target.normalize();
+								target = target * curMonster->getAttackRange();
+								auto moveby = MoveBy::create(2.0f, target);
+								auto actionRemove = RemoveSelf::create();
+								arrow->runAction(Sequence::create(moveby, actionRemove, nullptr));
+								curMonster->getSprite()->runAction(curMonster->mons_Frame_animation());
+							}
+							else
+							{
+								auto arrow = Sprite::create("Bullet//bullet_3.png");
+								PhysicsBody* arrowbody = PhysicsBody::createBox(arrow->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+								arrowbody->setGravityEnable(false);
+								arrowbody->setDynamic(false);
+								arrowbody->setCategoryBitmask(0x0001);
+								arrowbody->setCollisionBitmask(0x0001);
+								arrowbody->setContactTestBitmask(0x0001);
+								arrow->addComponent(arrowbody);
+								arrow->setTag(4);
+								int set_x = curMonster->getContentSize().width / 2;
+								int set_y = curMonster->getContentSize().height / 2;
+								arrow->setPosition(curMonster->getPositionX(), curMonster->getPositionY());
+								Hero->getCurBattleRoom()->addChild(arrow);
+								Vec2 target = curheropos - curMonster->getPosition();
+								target.normalize();
+								target = target * curMonster->getAttackRange();
+								auto moveby = MoveBy::create(2.0f, target);
+								auto actionRemove = RemoveSelf::create();
+								arrow->runAction(Sequence::create(moveby, actionRemove, nullptr));
+								curMonster->getSprite()->runAction(curMonster->mons_Frame_animation());
+							}
+							
 						}
 						else
 							curMonster->canattack = false;
@@ -527,6 +574,9 @@ void battleScene::updateMonsterAttack(float delta)
 							float dstY;
 							float delat_x = Hero->getPositionX() - curBoss->getPositionX();
 							float delat_y = Hero->getPositionY() - curBoss->getPositionY();
+
+							int boom_chance = rand() % 3;
+
 							if (delat_x != 0)
 							{
 								float tan = abs(delat_y / delat_x);
@@ -534,13 +584,33 @@ void battleScene::updateMonsterAttack(float delta)
 								float squr = 1 + t_2;
 								float length = sqrt(squr);
 								if (delat_x > 0)
-									dstX = 400 / length;
+								{
+									if (boom_chance == 1)
+										dstX = 600 / length;
+									else
+										dstX = 400 / length;
+								}
 								else
-									dstX = -400 / length;
+								{
+									if (boom_chance == 1)
+										dstX = -600 / length;
+									else
+										dstX = -400 / length;
+								}
 								if (delat_y > 0)
-									dstY = (400 / length) * tan;
+								{
+									if (boom_chance == 1)
+										dstY = (600 / length) * tan;
+									else
+										dstY = (400 / length) * tan;
+								}
 								else
-									dstY = -(400 / length) * tan;
+								{
+									if (boom_chance == 1)
+										dstY = (-600 / length) * tan;
+									else
+										dstY = (-400 / length) * tan;
+								}
 								dstX = dstX + curBoss->getPositionX();
 								dstY = dstY + curBoss->getPositionY();
 							}
@@ -548,17 +618,38 @@ void battleScene::updateMonsterAttack(float delta)
 							{
 								dstX = curBoss->getPositionX();
 								if (delat_y > 0)
-									dstY = 400 + curBoss->getPositionY();
+								{
+									if (boom_chance == 1)
+										dstY = 600 + curBoss->getPositionY();
+									else
+										dstY = 400 + curBoss->getPositionY();
+								}
 								else
-									dstY = -400 + curBoss->getPositionY();
+								{
+									if (boom_chance == 1)
+										dstY = -600 + curBoss->getPositionY();
+									else
+										dstY = -400 + curBoss->getPositionY();
+								}
 							}
 							if (dstX >= Xmin && dstX <= Xmax && dstY >= Ymin && dstY <= Ymax)
 							{
 								Vec2 target = curheropos - curBoss->getPosition();
 								target.normalize();
-								target = target * 400;
-								auto moveby = MoveBy::create(1.0f, target);
-								curBoss->runAction(moveby);
+								if (boom_chance == 1)
+								{
+									curBoss->getSprite()->setScale(1.8);
+									target = target * 500;
+									auto moveby = MoveBy::create(0.3f, target);
+									curBoss->runAction(moveby);
+								}
+								else
+								{
+									curBoss->getSprite()->setScale(1.0);
+									target = target * 400;
+									auto moveby = MoveBy::create(1.0f, target);
+									curBoss->runAction(moveby);
+								}
 								int delta_x = target.x;
 								if (delta_x < 0)
 									curBoss->getSprite()->setFlippedX(true);
@@ -579,6 +670,7 @@ void battleScene::updateMonsterAttack(float delta)
 						if (enemyPos.distance(curheropos) < curBoss->getAttackRange())
 						{
 							Vec2 target1 = curheropos - curBoss->getPosition();
+							int boom_chance = rand() % 3;
 							int delta_x = target1.x;
 							if (delta_x < 0)
 								curBoss->getSprite()->setFlippedX(true);
@@ -586,25 +678,107 @@ void battleScene::updateMonsterAttack(float delta)
 								curBoss->getSprite()->setFlippedX(false);
 							else
 								;
-							auto arrow = Sprite::create("Bullet//fire.png");
-							PhysicsBody* arrowbody = PhysicsBody::createBox(arrow->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
-							arrowbody->setGravityEnable(false);
-							arrowbody->setDynamic(false);
-							arrowbody->setCategoryBitmask(0x0001);
-							arrowbody->setCollisionBitmask(0x0001);
-							arrowbody->setContactTestBitmask(0x0001);
-							arrow->addComponent(arrowbody);
-							arrow->setTag(10);
 							int set_x = curBoss->getContentSize().width / 2;
 							int set_y = curBoss->getContentSize().height / 2;
-							arrow->setPosition(curBoss->getPositionX(), curBoss->getPositionY());
-							Hero->getCurBattleRoom()->addChild(arrow);
-							Vec2 target = curheropos - curBoss->getPosition();
-							target.normalize();
-							target = target * 600;
-							auto moveby = MoveBy::create(1.0f, target);
-							auto actionRemove = RemoveSelf::create();
-							arrow->runAction(Sequence::create(moveby, actionRemove, nullptr));
+							if (boom_chance != 1)
+							{
+								auto arrow = Sprite::create("Bullet//fire.png");
+								PhysicsBody* arrowbody = PhysicsBody::createBox(arrow->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+								arrowbody->setGravityEnable(false);
+								arrowbody->setDynamic(false);
+								arrowbody->setCategoryBitmask(0x0001);
+								arrowbody->setCollisionBitmask(0x0001);
+								arrowbody->setContactTestBitmask(0x0001);
+								arrow->addComponent(arrowbody);
+								arrow->setTag(10);
+								arrow->setPosition(curBoss->getPositionX(), curBoss->getPositionY());
+								Hero->getCurBattleRoom()->addChild(arrow);
+								Vec2 target = curheropos - curBoss->getPosition();
+								target.normalize();
+								target = target * 600;
+								auto moveby = MoveBy::create(1.0f, target);
+								auto actionRemove = RemoveSelf::create();
+								arrow->runAction(Sequence::create(moveby, actionRemove, nullptr));
+							}
+							else
+							{
+								float pi = 3.1415926;
+								float sita = pi / 180;
+								for (int i = 1; i < 25; i++)
+								{
+									auto arrow = Sprite::create("Bullet//fire.png");
+									PhysicsBody* arrowbody = PhysicsBody::createBox(arrow->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
+									arrowbody->setGravityEnable(false);
+									arrowbody->setDynamic(false);
+									arrowbody->setCategoryBitmask(0x0001);
+									arrowbody->setCollisionBitmask(0x0001);
+									arrowbody->setContactTestBitmask(0x0001);
+									arrow->addComponent(arrowbody);
+									arrow->setTag(10);
+									arrow->setPosition(curBoss->getPositionX(), curBoss->getPositionY());
+									Hero->getCurBattleRoom()->addChild(arrow);
+									if (i < 6)
+									{
+										float y = tan(15 * sita * i);
+										Vec2 target = Vec2(1.0, y);
+										target.normalize();
+										target = target * 600;
+										auto moveby = MoveBy::create(1.0f, target);
+										auto actionRemove = RemoveSelf::create();
+										arrow->runAction(Sequence::create(moveby, actionRemove, nullptr));
+										//CCLOG("Y %f", y);
+									}
+									else if (i == 6)
+									{
+										Vec2 target = Vec2(0, 600);
+										auto moveby = MoveBy::create(1.0f, target);
+										auto actionRemove = RemoveSelf::create();
+										arrow->runAction(Sequence::create(moveby, actionRemove, nullptr));
+									}
+									else if (i > 6 && i <= 12)
+									{
+										float y = abs(tan(15 * sita * i));
+										Vec2 target = Vec2(-1.0, y);
+										target.normalize();
+										target = target * 600;
+										auto moveby = MoveBy::create(1.0f, target);
+										auto actionRemove = RemoveSelf::create();
+										arrow->runAction(Sequence::create(moveby, actionRemove, nullptr));
+										//CCLOG("Y %f", y);
+									}
+									else if (i > 12 && i < 18)
+									{
+										float y = abs(tan(15 * sita * i));
+										Vec2 target = Vec2(-1.0, -y);
+										target.normalize();
+										target = target * 600;
+										auto moveby = MoveBy::create(1.0f, target);
+										auto actionRemove = RemoveSelf::create();
+										arrow->runAction(Sequence::create(moveby, actionRemove, nullptr));
+										//CCLOG("Y %f", y);
+									}
+									else if (i == 18)
+									{
+										Vec2 target = Vec2(0, -600);
+										auto moveby = MoveBy::create(1.0f, target);
+										auto actionRemove = RemoveSelf::create();
+										arrow->runAction(Sequence::create(moveby, actionRemove, nullptr));
+									}
+									else if (i > 18 && i <= 24)
+									{
+										float y = abs(tan(15 * sita * i));
+										Vec2 target = Vec2(1.0, -y);
+										target.normalize();
+										target = target * 600;
+										auto moveby = MoveBy::create(1.0f, target);
+										auto actionRemove = RemoveSelf::create();
+										arrow->runAction(Sequence::create(moveby, actionRemove, nullptr));
+										//CCLOG("Y %f", y);
+									}
+									else
+										;
+								}
+							}
 							curBoss->getSprite()->runAction(curBoss->boss_Frame_animation());
 						}
 					}
@@ -652,8 +826,11 @@ void battleScene::updatePortalJudgement()
 			assert(battleScene::Hero->getParent() == nullptr);
 			battleScene::_heroStateType = this->Hero->getHeroType();
 			battleScene::_heroStateHP = this->Hero->getHP();
+			battleScene::_heroStateMP = this->Hero->getMP();
 			battleScene::_heroStateArmor = this->Hero->getArmor();
-			battleScene::_heroStateWeaponType = this->Hero->getCurWeapon()->getWeaponType();
+			battleScene::_heroStateCoin = this->Hero->getCoin();
+			battleScene::_heroStateCurWeaponType = this->Hero->getCurWeapon()->getWeaponType();
+			battleScene::_heroStateSecondaryWeaponType = this->Hero->getSecondaryWeaponType();
 			this->cleanup();
 			this->removeAllChildren();           //释放
 			Director::getInstance()->replaceScene(TransitionFade::create(2.0f, battleScene::createBattleScene()));
@@ -690,6 +867,7 @@ void battleScene::updateHeroArmor(float delta)
 		if (Hero->getArmor() < Hero->getMaxArmor())
 			Hero->setArmor(Hero->getArmor() + 1);
 	//CCLOG("Ar:%d", Hero->getArmor());
+	CCLOG("CO:%d", Hero->getCoin());
 }
 
 void battleScene::updateBossState()
@@ -876,7 +1054,7 @@ void battleScene::setRoomType()
 		if (i == 0)
 			curRoom->_battleRoomType = TypeBox;
 		else if (i == 1)
-			curRoom->_battleRoomType = TypeBox;
+			curRoom->_battleRoomType = TypeStore;
 	}
 }
 

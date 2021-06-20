@@ -46,6 +46,7 @@ constexpr int DirectionY[4] = { 0, 1, 0, -1 };
 #define TypeBegin 2                         //将生成的第一个房间即房间延伸的初始房间定义为TypeBegin
 #define TypeEnd 3                           //中心生成传送门
 #define TypeBoss 4                          //关卡序号为5时生成以替代TypeEnd,Boss死亡后中心生成传送门
+#define TypeStore 5                         //生成随机武器或道具,需用货币购买
 //拓展功能,后续update版本添加
 //#define TypeStatue 5
 //#define TypeStore 6

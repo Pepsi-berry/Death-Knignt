@@ -47,7 +47,7 @@ void monster::move(float delta)
 		int random = std::rand() % 4 + 1;
 		switch (random) {
 		case 1:
-			if (this->gettype() == 0)
+			if (this->gettype() == 0|| this->gettype() == 2)
 			{
 				x += 5 * _moveSpeed;
 				if (x > Xmin && x < Xmax && y>Ymin && y < Ymax)
@@ -57,7 +57,7 @@ void monster::move(float delta)
 					this->getSprite()->runAction(mons_Frame_animation_rest());
 				}
 			}
-			if (this->gettype() == 1)
+			if (this->gettype() == 1|| this->gettype() == 3)
 			{
 				x += 3 * _moveSpeed;
 				if (x > Xmin && x < Xmax && y>Ymin && y < Ymax)
@@ -69,7 +69,7 @@ void monster::move(float delta)
 			}
 			break;
 		case 2:
-			if (this->gettype() == 0)
+			if (this->gettype() == 0 || this->gettype() == 2)
 			{
 				x -= 5 * _moveSpeed;
 				if (x > Xmin && x < Xmax && y>Ymin && y < Ymax)
@@ -79,7 +79,7 @@ void monster::move(float delta)
 					this->getSprite()->runAction(mons_Frame_animation_rest());
 				}
 			}
-			if (this->gettype() == 1)
+			if (this->gettype() == 1 || this->gettype() == 3)
 			{
 				x -= 3 * _moveSpeed;
 				if (x > Xmin && x < Xmax && y>Ymin && y < Ymax)
@@ -91,7 +91,7 @@ void monster::move(float delta)
 			}
 			break;
 		case 3:
-			if (this->gettype() == 0)
+			if (this->gettype() == 0 || this->gettype() == 2)
 			{
 				y += 5 * _moveSpeed;
 				if (x > Xmin && x < Xmax && y>Ymin && y < Ymax)
@@ -100,7 +100,7 @@ void monster::move(float delta)
 					this->getSprite()->runAction(mons_Frame_animation_rest());
 				}
 			}
-			if (this->gettype() == 1)
+			if (this->gettype() == 1 || this->gettype() == 3)
 			{
 				y += 3 * _moveSpeed;
 				if (x > Xmin && x < Xmax && y>Ymin && y < Ymax)
@@ -111,7 +111,7 @@ void monster::move(float delta)
 			}
 			break;
 		case 4:
-			if (this->gettype() == 0)
+			if (this->gettype() == 0 || this->gettype() == 2)
 			{
 				y -= 5 * _moveSpeed;
 				if (x > Xmin && x < Xmax && y>Ymin && y < Ymax)
@@ -120,7 +120,7 @@ void monster::move(float delta)
 					this->getSprite()->runAction(mons_Frame_animation_rest());
 				}
 			}
-			if (this->gettype() == 1)
+			if (this->gettype() == 1 || this->gettype() == 3)
 			{
 				y -= 3 * _moveSpeed;
 				if (x > Xmin && x < Xmax && y>Ymin && y < Ymax)
@@ -149,16 +149,30 @@ bool monster::init() {
 	this->settype();
 	this->setAttackRange();
 	int curtype = this->gettype();
-	if (curtype == 0)
+	if (curtype == 0)//Öí
 	{
 		auto monsterSP = Sprite::create("Monster//pig_monster_rest1.png");
 		bindSprite(monsterSP);
 		this->schedule(CC_SCHEDULE_SELECTOR(monster::move), 1.0f);
 		this->schedule(CC_SCHEDULE_SELECTOR(monster::updatedead), 0.01f);
 	}
-	if (curtype == 1)
+	if (curtype == 1)//¹­¼ýÊÖ	
 	{
 		auto monsterSP = Sprite::create("Monster1//O_small_monster_rest1.png");
+		bindSprite(monsterSP);
+		this->schedule(CC_SCHEDULE_SELECTOR(monster::move), 1.0f);
+		this->schedule(CC_SCHEDULE_SELECTOR(monster::updatedead), 0.01f);
+	}
+	if (curtype == 2)//»Æ½ðÖí
+	{
+		auto monsterSP = Sprite::create("Monster1//Y_craw_monster_rest1.png");
+		bindSprite(monsterSP);
+		this->schedule(CC_SCHEDULE_SELECTOR(monster::move), 1.0f);
+		this->schedule(CC_SCHEDULE_SELECTOR(monster::updatedead), 0.01f);
+	}
+	if (curtype == 3)//Ñ©ÇòÉäÊÖ
+	{
+		auto monsterSP = Sprite::create("Monster1//snow_monster_rest1.png");
 		bindSprite(monsterSP);
 		this->schedule(CC_SCHEDULE_SELECTOR(monster::move), 1.0f);
 		this->schedule(CC_SCHEDULE_SELECTOR(monster::updatedead), 0.01f);
@@ -175,6 +189,12 @@ void monster::setAttackRange() {
 	case 1:
 		ATTACKRANGE = 400;
 		break;
+	case 2:
+		ATTACKRANGE = 300;
+		break;
+	case 3:
+		ATTACKRANGE = 500;
+		break;
 	}
 }
 
@@ -185,7 +205,7 @@ int monster::getAttackRange()const
 
 void monster::settype()
 {
-	int random = rand() % 2;
+	int random = rand() % 4;
 	enemyType = random;
 }
 
@@ -214,6 +234,24 @@ Animate* monster::mons_Frame_animation()
 		for (int i = 1; i < 5; i++)
 		{
 			sprintf(namesize, "Monster1//O_small_monster_move%d.png", i);
+			monster_frame_animation->addSpriteFrameWithFile(namesize);
+		}
+	}
+
+	if (this->gettype() == 2)
+	{
+		for (int i = 1; i < 5; i++)
+		{
+			sprintf(namesize, "Monster1//Y_craw_monster_move%d.png", i);
+			monster_frame_animation->addSpriteFrameWithFile(namesize);
+		}
+	}
+
+	if (this->gettype() == 3)
+	{
+		for (int i = 1; i < 5; i++)
+		{
+			sprintf(namesize, "Monster1//snow_monster_move%d.png", i);
 			monster_frame_animation->addSpriteFrameWithFile(namesize);
 		}
 	}
@@ -252,6 +290,24 @@ Animate* monster::mons_Frame_animation_rest()
 		}
 	}
 
+	if (this->gettype() == 2)
+	{
+		for (int i = 1; i < 5; i++)
+		{
+			sprintf(namesize, "Monster1//Y_craw_monster_rest%d.png", i);
+			monster_frame_animation->addSpriteFrameWithFile(namesize);
+		}
+	}
+
+	if (this->gettype() == 3)
+	{
+		for (int i = 1; i < 5; i++)
+		{
+			sprintf(namesize, "Monster1//snow_monster_rest%d.png", i);
+			monster_frame_animation->addSpriteFrameWithFile(namesize);
+		}
+	}
+
 	monster_frame_animation->setDelayPerUnit(0.2f);
 
 	monster_frame_animation->setLoops(1);
@@ -278,6 +334,20 @@ Animate* monster::mons_Frame_animation_dead()
 	{
 
 		sprintf(namesize, "Monster1//O_small_monster_dead.png");
+		monster_frame_animation->addSpriteFrameWithFile(namesize);
+	}
+
+	if (this->gettype() == 2)
+	{
+
+		sprintf(namesize, "Monster1//Y_craw_monster_dead.png");
+		monster_frame_animation->addSpriteFrameWithFile(namesize);
+	}
+
+	if (this->gettype() == 3)
+	{
+
+		sprintf(namesize, "Monster1//snow_monster_dead.png");
 		monster_frame_animation->addSpriteFrameWithFile(namesize);
 	}
 

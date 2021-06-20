@@ -2,8 +2,10 @@
 #define _BULLET_
 
 #include "cocos2d.h"
+#include"weapon.h"
 
 USING_NS_CC;
+
 
 class hero;
 class battleScene;
@@ -13,6 +15,9 @@ public:
 	bullet() = default;
 	~bullet();
 	CREATE_FUNC(bullet);
+
+	void bindWeapon(weapon* weapon);
+	weapon* getweapon()const;
 
 	int getdamage()const;
 
@@ -31,8 +36,11 @@ public:
 
 	virtual bool init();
 
+	void fullcreate();
+
 protected:
 	int _damage = 3;
+	weapon* _curWeapon;
 	Sprite* s_bullet;
 	hero* t_hero;
 	Scene* t_battleScene;

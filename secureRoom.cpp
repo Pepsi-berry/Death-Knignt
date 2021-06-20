@@ -9,8 +9,11 @@ hero* battleScene::Hero = nullptr;
 int battleScene::_battleSceneNumber = 0;
 int battleScene::_heroStateType = 0;
 int battleScene::_heroStateHP = 0;
+int battleScene::_heroStateMP = 0;
 int battleScene::_heroStateArmor = 0;
-int battleScene::_heroStateWeaponType = 0;
+int battleScene::_heroStateCoin = 0;
+int battleScene::_heroStateCurWeaponType = 0;
+int battleScene::_heroStateSecondaryWeaponType = 0;
 
 
 void secureRoom::truekeycode(EventKeyboard::KeyCode keycode)
@@ -75,9 +78,7 @@ void secureRoom::update(float delta)
 			herobody->setContactTestBitmask(0x0001);
 			Hero->addComponent(herobody);
 			Hero->setTag(1);
-			auto myweapon = weapon::create();
-			myweapon->changeWeapon(0);
-			Hero->bindWeapon(myweapon);
+			Hero->bindWeapon();
 			this->addChild(Hero, 0);
 			ischosen = 1;
 		}
@@ -96,9 +97,7 @@ void secureRoom::update(float delta)
 			herobody->setContactTestBitmask(0x0001);
 			Hero->addComponent(herobody);
 			Hero->setTag(1);
-			auto myweapon = weapon::create();
-			myweapon->changeWeapon(1);
-			Hero->bindWeapon(myweapon);
+			Hero->bindWeapon();
 			this->addChild(Hero, 0);
 			ischosen = 1;
 		}
@@ -123,8 +122,11 @@ void secureRoom::update(float delta)
 			battleScene::_battleSceneNumber = 1;
 			battleScene::_heroStateType = this->Hero->getHeroType();
 			battleScene::_heroStateHP = this->Hero->getHP();
+			battleScene::_heroStateMP = this->Hero->getMP();
 			battleScene::_heroStateArmor = this->Hero->getArmor();
-			battleScene::_heroStateWeaponType = this->Hero->getCurWeapon()->getWeaponType();
+			battleScene::_heroStateCoin = this->Hero->getCoin();
+			battleScene::_heroStateCurWeaponType = this->Hero->getCurWeaponType();
+			battleScene::_heroStateSecondaryWeaponType = this->Hero->getSecondaryWeaponType();
 			this->cleanup();
 			this->removeAllChildren();
 
@@ -134,7 +136,8 @@ void secureRoom::update(float delta)
 }
 
 bool secureRoom::init() {
-	if (!Scene::init()) {
+	if (!Scene::init()) 
+	{
 		return false;
 	}
 	AudioEngine::stopAll();
