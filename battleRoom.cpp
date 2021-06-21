@@ -58,7 +58,7 @@ void battleRoom::createBox(float positionX,float positionY)
 void battleRoom::createMonster()
 {
 	srand(static_cast<unsigned int>(time(nullptr)));
-	int monsterNumber = 2 + rand() % 4;                           //随机初始化敌人产生数目
+	int monsterNumber = 3 + rand() % 4;                           //随机初始化敌人产生数目
 	for (int i = 1; i <= monsterNumber; i++)
 	{
 		float enemyPositionX = _centerX + (rand()) % 300;
@@ -77,23 +77,6 @@ void battleRoom::createMonster()
 		_vecMonster.pushBack(tempMonster);
 		this->addChild(tempMonster, 0);
 
-		//tempMonster->bindAtBattleRoom(this);                    //绑定所在房间
-		//tempMonster->startCount = i * 2;
-		// 
-		//auto monsterforT = monster::create();
-		////this->bindmonster(monsterforT);
-		////this->getmonster();
-		//monsterforT->setPosition(Point((visibleSize.width * (i + 1)) / 5, (visibleSize.height * (i + 1)) / 5));
-		//PhysicsBody* physicsBody2 = PhysicsBody::createBox(monsterforT->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
-		//physicsBody2->setGravityEnable(false);
-		//physicsBody2->setDynamic(false);
-		//physicsBody2->setCategoryBitmask(0x0001);
-		//physicsBody2->setCollisionBitmask(0x0001);
-		//physicsBody2->setContactTestBitmask(0x0001);
-		//monsterforT->addComponent(physicsBody2);
-		//monsterforT->setTag(2);
-		//vecMonster.pushBack(monsterforT);
-		//this->addChild(monsterforT, 0);
 	}
 }
 
@@ -121,14 +104,13 @@ void battleRoom::createBattleRoomMaping()
 {
 	srand(time(nullptr));
 
-	//if (_battleRoomType == TypeEnd || _battleRoomType ==TypeWeapon  || roomType == TypeProp)
 	if (_battleRoomType == TypeEnd || _battleRoomType == TypeBox)
 	{
 		_sizeX -= 6;
 		_sizeY -= 6;
 
 		if (_battleRoomType == TypeEnd)
-		{  //设置房间大小以及传送门
+		{ 
 			_sizeX -= 2, _sizeY -= 2;
 			Sprite* portal = Sprite::create("Map//portal3.png");
 			portal->setPosition(Point(_centerX, _centerY));
@@ -144,17 +126,36 @@ void battleRoom::createBattleRoomMaping()
 		_sizeY -= 6;
 
 		auto prop1 = drop::create();
+		prop1->changetype(1);
 		prop1->setPosition(Point(_centerX - 200, _centerY));
+		char Price_1[16];
+		itoa(prop1->getDropPrice(), Price_1, 10);
+		auto prop1Price = Label::createWithTTF(Price_1, "fonts/arial.ttf", 24);
+		prop1Price->setPosition(Point(_centerX - 200, _centerY - 45));
+		this->addChild(prop1Price);
 		this->addChild(prop1);
 		_vecDrop.pushBack(prop1);
+
 		auto prop2 = drop::create();
+		prop2->changetype(2);
 		prop2->setPosition(Point(_centerX, _centerY));
+		char Price_2[16];
+		itoa(prop2->getDropPrice(), Price_2, 10);
+		auto prop2Price = Label::createWithTTF(Price_2, "fonts/arial.ttf", 24);
+		prop2Price->setPosition(Point(_centerX, _centerY - 45));
 		this->addChild(prop2);
+		this->addChild(prop2Price);
 		_vecDrop.pushBack(prop2);
+
 		weapon* weaponForSale = weapon::create();
-		weaponForSale->changeWeapon(rand() % 4);
+		weaponForSale->changeWeapon(rand() % 5);
 		weaponForSale->setPosition(Point(_centerX + 200, _centerY));
+		char Price_3[16];
+		itoa(weaponForSale->getWeaponPrice(), Price_3, 10);
+		auto weaponPrice = Label::createWithTTF(Price_3, "fonts/arial.ttf", 24);
+		weaponPrice->setPosition(Point(_centerX + 210, _centerY - 45));
 		this->addChild(weaponForSale);
+		this->addChild(weaponPrice);
 		_vecWeapon.pushBack(weaponForSale);
 	}
 	else if (_battleRoomType == TypeBoss)
@@ -165,19 +166,16 @@ void battleRoom::createBattleRoomMaping()
 
 	const float X = _centerX - WIDTHOFFLOOR * (_sizeX / 2);
 	const float Y = _centerY + HEIGHTOFFLOOR * (_sizeY / 2);
-	//(X, Y) is upLeft Position;
+
 	_topLeftCornerPositionX = X + WIDTHOFFLOOR;
 	_topLeftCornerPositionY = Y - HEIGHTOFFLOOR;
-	// get vertices Position
+
 	_lowerRightCornerPositionX = X + WIDTHOFFLOOR * (_sizeX - 2);
 	_lowerRightCornerPositionY = Y - HEIGHTOFFLOOR * (_sizeY - 2);
 
-	//CCLOG("%f,%f", _centerX, _centerY);
-	//CCLOG("%d,%d", X, Y);
-	//CCLOG("%d,%d", _topLeftCornerPositionX, _lowerRightCornerPositionX);
 	float curX = X, curY = Y;
 	for (int y = _sizeY - 1; y >= 0; y--) 
-	{  // for height and width
+	{  
 		for (int x = 0; x <= _sizeX - 1; x++) 
 		{
 			if (y == 0 || y == _sizeY - 1 || x == 0 || x == _sizeX - 1) 
@@ -315,13 +313,12 @@ void battleRoom::checkBattleRoomBoundaryBarrier(hero* Hero)
 			heroPositionY >= (_lowerRightCornerPositionY + HEIGHTOFFLOOR * (_sizeY / 2 - 3))))
 		{
 			if (Hero->getmovespeedX() > 0 && heroPositionX >= _lowerRightCornerPositionX && !_visDirection[m_RIGHT])
-				//ispeedX = .0f;
 				Hero->setmovespeedX(.0f);
 			if (Hero->getmovespeedX() < 0 && heroPositionX <= _topLeftCornerPositionX && !_visDirection[m_LEFT])
 				Hero->setmovespeedX(.0f);
 		}
-		else if (_topLeftCornerPositionX + HEIGHTOFFLOOR * (_sizeY / 2 - 3) <= heroPositionX &&                     //??
-			heroPositionX <= _lowerRightCornerPositionX - HEIGHTOFFLOOR * (_sizeY / 2 - 3))
+		else if (_topLeftCornerPositionX + HEIGHTOFFLOOR * (_sizeX / 2 - 3) <= heroPositionX &&                     //??
+			heroPositionX <= _lowerRightCornerPositionX - HEIGHTOFFLOOR * (_sizeX / 2 - 3))
 		{
 			if (Hero->getmovespeedY() > 0 && heroPositionY >= _topLeftCornerPositionY + HEIGHTOFFLOOR / 2 && !_visDirection[m_UP])
 				Hero->setmovespeedY(.0f);
@@ -407,6 +404,7 @@ bool battleRoom::openChest(hero* Hero)
 	if (curChest != nullptr)
 	{
 		auto randdrop = drop::create();
+		randdrop->changetype(rand() % 3);
 		randdrop->setPosition(curChest->getPosition());
 		_vecDrop.pushBack(randdrop);
 		this->addChild(randdrop);
@@ -417,18 +415,3 @@ bool battleRoom::openChest(hero* Hero)
 }
 
 
-//
-//bool battleRoom::getIsAtBattleRoom(hero* Hero)
-//{
-//	float heroPositionX = Hero->getPositionX();
-//	float heroPositionY = Hero->getPositionY();
-//
-//	//CCLOG("%d,%d",_columnNum, _rowNum);
-//	//CCLOG("heroPositionX %f,heroPositionY %f,_topLeftCornerPositionX %f,_topLeftCornerPositionY %f, _lowerRightCornerPositionX %f,_lowerRightCornerPositionY %f", heroPositionX, heroPositionY, _topLeftCornerPositionX, _topLeftCornerPositionY
-//		//, _lowerRightCornerPositionX, _lowerRightCornerPositionY);
-//	if (heroPositionX >= _topLeftCornerPositionX - WIDTHOFFLOOR && heroPositionX <= _lowerRightCornerPositionX + WIDTHOFFLOOR
-//		&& heroPositionY >= _lowerRightCornerPositionY - HEIGHTOFFLOOR && heroPositionY <= _topLeftCornerPositionY + HEIGHTOFFLOOR)
-//		return true;
-//	else
-//		return false;
-//}

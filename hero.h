@@ -94,6 +94,7 @@ protected:
 	weapon* _secondaryWeapon;
 	weapon* _thirdWeapon;
 	weapon* _fourthWeapon;
+	weapon* _fifthWeapon;
 
 	int _MP;
 	int _maxMP;

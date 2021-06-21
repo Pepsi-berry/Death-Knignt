@@ -16,10 +16,33 @@ void drop::bindSprite(Sprite* sprite) {
 	this->_dropsprite->setPosition(Point(size.width / 2, size.height / 2));
 }
 
+void drop::changetype(int changeType)
+{
+	this->_dropType = changeType;
+	if (_dropType == 0)
+	{
+		auto curdrop = Sprite::create("Props//add_gold.png");
+		_dropPrice = 0;
+		bindSprite(curdrop);
+	}
+	if (_dropType == 1)
+	{
+		auto curdrop = Sprite::create("Props//add_HP.png");
+		_dropPrice = 20 + rand() % 10;
+		bindSprite(curdrop);
+	}
+	if (_dropType == 2)
+	{
+		auto curdrop = Sprite::create("Props//add_MP.png");
+		_dropPrice = 15 + rand() % 7;
+		bindSprite(curdrop);
+	}
+}
+
 bool drop::init() 
 {
 	_isUsed = 0;
-	this->settype();
+	
 	//PhysicsBody* dropbody = PhysicsBody::createBox(this->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
 	//dropbody->setGravityEnable(false);
 	//dropbody->setDynamic(false);
@@ -28,25 +51,6 @@ bool drop::init()
 	//dropbody->setContactTestBitmask(0x0001);
 	//this->addComponent(dropbody);
 	//this->setTag(5);
-	int curtype = this->gettype();
-	if (curtype == 0)
-	{
-		auto curdrop = Sprite::create("Props//add_gold.png");
-		_dropPrice = 0;
-		bindSprite(curdrop);
-	}
-	if (curtype == 1)
-	{
-		auto curdrop = Sprite::create("Props//add_HP.png");
-		_dropPrice = 20 + rand() % 10;
-		bindSprite(curdrop);
-	}
-	if (curtype == 2)
-	{
-		auto curdrop = Sprite::create("Props//add_MP.png");
-		_dropPrice = 15 + rand() % 7;
-		bindSprite(curdrop);
-	}
 	return true;
 }
 

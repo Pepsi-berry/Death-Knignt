@@ -74,10 +74,11 @@ public:
 	void setPhyWorld(PhysicsWorld* world) { m_world = world; };
 	/**/
 
-	 //两个回调
+	 //回调
 	void menuCloseCallbackEnd(Ref* pSender);
 	void menuCloseCallbackSet(Ref* pSender);
-
+	void menuCloseCallbackVolumeUp(cocos2d::Ref* pSender);//升高音量
+	void menuCloseCallbackVolumeDown(cocos2d::Ref* pSender);//降低音量
 
 
 
@@ -115,9 +116,19 @@ private:
 
 	//状态条
 	ui::LoadingBar* HPLoadingBar = ui::LoadingBar::create();
-
+	ui::LoadingBar* ARMORLoadingBar = ui::LoadingBar::create();
+	ui::LoadingBar* MPLoadingBar = ui::LoadingBar::create();
 	//状态条的数字
 	Label* HPnum;
+	Label* ARMORnum;
+	Label* MPnum;
+	Label* COINnum;
+	Sprite* CoinPng;
+	int BGM;
+	cocos2d::Menu* MenuUpVolume;
+	cocos2d::Menu* MenuDownVolume;
+	/*音量大小标签*/
+	cocos2d::Label* volumeNumLab;
 };
 
 

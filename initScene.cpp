@@ -4,11 +4,27 @@
 #include "secureRoom.h"
 #include "settingScene.h"
 #include "battleScene.h"
+#include "ui/CocosGUI.h"
 USING_NS_CC;
 
 Scene* initScene::createScene()
 {
     return initScene::create();
+}
+
+//转换中文
+char* initScene::G2U(const char* gb2312)
+{
+    int len = MultiByteToWideChar(CP_ACP, 0, gb2312, -1, NULL, 0);
+    wchar_t* wstr = new wchar_t[len + 1];
+    memset(wstr, 0, len + 1);
+    MultiByteToWideChar(CP_ACP, 0, gb2312, -1, wstr, len);
+    len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
+    char* str = new char[len + 1];
+    memset(str, 0, len + 1);
+    WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
+    if (wstr) delete[] wstr;
+    return str;
 }
 
 // Print useful error message instead of segfaulting when files are not there.
@@ -28,49 +44,61 @@ bool initScene::init()
     {
         return false;
     }
-    AudioEngine::stopAll();
-    //获取界面尺寸
+    AudioEngine::uncacheAll();
+
     auto visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
+    backGround = Sprite::create("start.png");
+    auto backGroundSize = backGround->getContentSize();
+    backGround->setScale(visibleSize.width / backGroundSize.width, visibleSize.height / backGroundSize.height);
+
+    backGround->setPosition(
+        Point(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+
+    this->addChild(backGround, 0);
 
     /*背景音乐*/
-    backgroundAudioID = AudioEngine::play2d("bkMusic.mp3", false);
+    BGM = AudioEngine::play2d("bkMusic.mp3", true, 0.5f);
 
-    /*开始界面背景图像*/
-    auto startBackground = Sprite::create("start.png");
-    auto backGroundSize = startBackground->getContentSize();
-    //startBackground->setScale(visibleSize.width / backGroundSize.width, visibleSize.height / backGroundSize.height);
+    auto volumeUpLab = Label::createWithTTF("+", "fonts/arial.ttf", 36);
+    auto volumeDownLab = Label::createWithTTF("-", "fonts/arial.ttf", 36);
+    auto vol = Label::createWithTTF("BGM", "fonts/arial.ttf", 24);
+    auto volumeUpMenu = MenuItemLabel::create(volumeUpLab, CC_CALLBACK_1(initScene::menuCloseCallbackVolumeUp, this));
+    auto volumeDownMenu = MenuItemLabel::create(volumeDownLab, CC_CALLBACK_1(initScene::menuCloseCallbackVolumeDown, this));
 
-    if (startBackground == nullptr)
-    {
-        problemLoading("'start.png'");
-    }
-    else {
-        startBackground->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
-        startBackground->setScale(1.10f);
-        this->addChild(startBackground, 0);
-    }
+    MenuUpVolume = Menu::create(volumeUpMenu, NULL);
+    MenuDownVolume = Menu::create(volumeDownMenu, NULL);
+
+    MenuUpVolume->setPosition(visibleSize.width + origin.x - 120, visibleSize.height + origin.y - 25);
+    MenuDownVolume->setPosition(visibleSize.width + origin.x - 200, visibleSize.height + origin.y - 25);
+    vol->setPosition(visibleSize.width + origin.x - 160, visibleSize.height + origin.y - 25);
+    this->addChild(MenuUpVolume, 5);
+    this->addChild(MenuDownVolume, 5);
+    this->addChild(vol, 5);
 
     /*创建菜单*/
-    auto startLab = Label::createWithTTF("START", "fonts/arial.ttf", 24);
-    auto exitLab = Label::createWithTTF("EXIT", "fonts/arial.ttf", 24);
+
+    char* Start = G2U("开始游戏");
+    char* Quit = G2U("结束游戏");
+    auto startLab = Label::createWithTTF(Start, "fonts/Song.ttf", 36);
+    auto quitLab = Label::createWithTTF(Quit, "fonts/Song.ttf", 36);
 
     auto startMenu = MenuItemLabel::create(startLab, CC_CALLBACK_1(initScene::menuCloseCallbackStart, this));
-    auto exitMenu = MenuItemLabel::create(exitLab, CC_CALLBACK_1(initScene::menuCloseCallbackEnd, this));
+    auto quitMenu = MenuItemLabel::create(quitLab, CC_CALLBACK_1(initScene::menuCloseCallbackEnd, this));
 
-    auto setImg = MenuItemImage::create(
+    auto setPng = MenuItemImage::create(
         "information.png",
         "information.png",
         CC_CALLBACK_1(initScene::menuCloseCallbackSet, this));
-    setImg->setScale(0.2f, 0.2f);
-    auto exitImg = MenuItemImage::create(
-        "exit.png",
-        "exit.png",
+    setPng->setScale(0.2f, 0.2f);
+    auto quitPng = MenuItemImage::create(
+        "quit.png",
+        "quit.png",
         CC_CALLBACK_1(initScene::menuCloseCallbackEnd, this));
-    exitImg->setScale(0.4f, 0.4f);
-    auto Menu_1 = Menu::create(startMenu, exitMenu, NULL);
-    auto Menu_2 = Menu::create(setImg, NULL);
-    auto Menu_3 = Menu::create(exitImg, NULL);
+    quitPng->setScale(0.4f, 0.4f);
+    auto Menu_1 = Menu::create(startMenu, quitMenu, NULL);
+    auto Menu_2 = Menu::create(setPng, NULL);
+    auto Menu_3 = Menu::create(quitPng, NULL);
 
     /*垂直排列*/
     Menu_1->alignItemsVertically();
@@ -111,7 +139,7 @@ void initScene::menuCloseCallbackEnd(Ref* pSender)
 /*开始游戏*/
 void initScene::menuCloseCallbackStart(Ref* pSender)
 {
-    AudioEngine::stop(backgroundAudioID);
+    AudioEngine::stop(BGM);
     Director::getInstance()->pushScene(initScene::create());
     Director::getInstance()->replaceScene(TransitionSlideInT::create(1.8f, secureRoom::createScene()));
 }
@@ -119,5 +147,29 @@ void initScene::menuCloseCallbackStart(Ref* pSender)
 /*进入设置面板*/
 void initScene::menuCloseCallbackSet(Ref* pSender)
 {
-    Director::getInstance()->pushScene(TransitionFade::create(2.0f, settingScene::createScene()));
+    Director::getInstance()->pushScene(TransitionFade::create(0.5f, settingScene::createScene()));
+}
+
+/*升高音量*/
+void initScene::menuCloseCallbackVolumeUp(Ref* pSender) {
+    /*检测是否达到最大值*/
+    //if (volume == 1.0f) {
+    //    return;
+    //}
+    auto volume = AudioEngine::getVolume(BGM);
+    /*修改音量*/
+    AudioEngine::setVolume(BGM, volume + 0.05f);
+
+}
+
+/*降低音量*/
+void initScene::menuCloseCallbackVolumeDown(Ref* pSender) {
+    /*检测是否达到最小值*/
+    //if (volume == 0.0f) {
+    //    return;
+    //}
+    auto volume = AudioEngine::getVolume(BGM);
+    /*修改音量*/
+    AudioEngine::setVolume(BGM, volume - 0.05f);
+
 }

@@ -19,17 +19,20 @@ void hero::bindWeapon()
 	auto tempSecondaryWeapon = weapon::create();
 	auto tempThirdWeapon = weapon::create();
 	auto tempFourthWeapon = weapon::create();
+	auto tempFifthWeapon = weapon::create();
 
 	tempWeapon->changeWeapon(0);
 	tempSecondaryWeapon->changeWeapon(1);
 	tempThirdWeapon->changeWeapon(2);
 	tempFourthWeapon->changeWeapon(3);
+	tempFifthWeapon->changeWeapon(4);
 
 
 	this->_curWeapon = tempWeapon;
 	this->_secondaryWeapon = tempSecondaryWeapon;
 	this->_thirdWeapon = tempThirdWeapon;
 	this->_fourthWeapon = tempFourthWeapon;
+	this->_fifthWeapon = tempFifthWeapon;
 
 	Size herosize = this->getContentSize();
 	float weapon_x = herosize.width / 2;
@@ -38,11 +41,13 @@ void hero::bindWeapon()
 	this->_secondaryWeapon->setPosition((weapon_x), (weapon_y));
 	this->_thirdWeapon->setPosition((weapon_x), (weapon_y));
 	this->_fourthWeapon->setPosition((weapon_x), (weapon_y));
+	this->_fifthWeapon->setPosition((weapon_x), (weapon_y));
 
 	this->addChild(_curWeapon);
 	this->addChild(_secondaryWeapon);
 	this->addChild(_thirdWeapon);
 	this->addChild(_fourthWeapon);
+	this->addChild(_fifthWeapon);
 
 	updateWeaponDisplayStatus();
 }
@@ -57,6 +62,8 @@ weapon* hero::getCurWeapon()
 		return this->_thirdWeapon;
 	else if (3 == _curWeaponType)
 		return this->_fourthWeapon;
+	else if (4 == _curWeaponType)
+		return this->_fifthWeapon;
 }
 
 int hero::getWeaponType()
@@ -148,15 +155,15 @@ void hero::initmem()
 	if (this->getHeroType() == 1)
 	{
 		this->_curWeaponType = 0;
-		this->_moveSpeed = 5;
-		this->_heroSpeedX = 5;
-		this->_heroSpeedY = 5;
-		this->setMaxArmor(10);
-		this->setArmor(10);
+		this->_moveSpeed = 8;
+		this->_heroSpeedX = 8;
+		this->_heroSpeedY = 8;
+		this->setMaxArmor(15);
+		this->setArmor(15);
 		this->setMaxHP(10);
 		this->setHP(10);
-		this->setMaxMP(200);
-		this->setMP(200);
+		this->setMaxMP(300);
+		this->setMP(300);
 		auto spritehero = Sprite::create("Character//knight1.png");
 		bindSprite(spritehero);
 	}
@@ -166,10 +173,10 @@ void hero::initmem()
 		this->_moveSpeed = 10;
 		this->_heroSpeedX = 10;
 		this->_heroSpeedY = 10;
-		this->setMaxArmor(20);
-		this->setArmor(20);
-		this->setMaxHP(20);
-		this->setHP(20);
+		this->setMaxArmor(15);
+		this->setArmor(15);
+		this->setMaxHP(10);
+		this->setHP(10);
 		this->setMaxMP(150);
 		this->setMP(150);
 		auto spritehero = Sprite::create("Player2//ranger_rest1.png");
@@ -201,18 +208,10 @@ void hero::updatekeyboard(float delta)
 		auto listener = EventListenerKeyboard::create();
 		listener->onKeyPressed = [&](EventKeyboard::KeyCode code, Event*)
 		{
-			if (this->getWeaponType() == 0 || this->getWeaponType() == 1)
-			{
-				if (!this->isdead())
-					this->truekeycode(code);
-				else
-					this->falsekeycode(code);
-			}
-			if(this->getWeaponType() == 2 || this->getWeaponType() == 3)
-				if (!this->isdead())
-					this->truekeycode(code);
-				else
-					this->falsekeycode(code);
+			if (!this->isdead())
+				this->truekeycode(code);
+			else
+				this->falsekeycode(code);
 		};
 
 		listener->onKeyReleased = [=](EventKeyboard::KeyCode code, Event* event) {
@@ -335,6 +334,7 @@ void hero::updatekeyboard(float delta)
 								//getdamage(-2);
 								curDrop->propsUsing(this);
 								curDrop->setIsUsed(1);
+								this->getCurBattleRoom()->getVecdrop().eraseObject(curDrop);
 								this->addCoin(0 - curDrop->getDropPrice());
 								curDrop->removeFromParent();
 							}
@@ -357,6 +357,7 @@ void hero::updatekeyboard(float delta)
 								//getdamage(-2);
 								curDrop->propsUsing(this);
 								curDrop->setIsUsed(1);
+								this->getCurBattleRoom()->getVecdrop().eraseObject(curDrop);
 								curDrop->removeFromParent();
 							}
 					}
@@ -365,8 +366,8 @@ void hero::updatekeyboard(float delta)
 						monster* nearMonster = nullptr;
 						Vec2 curPos = this->getPosition();
 						float distance = 99999;
-						int set_x = this->getContentSize().width / 2;
-						int set_y = this->getContentSize().height / 2;
+						int set_x = this->getPositionX();
+						int set_y = this->getPositionY();
 
 						for (monster* curMonster : this->getCurBattleRoom()->getVecMonster())
 						{
@@ -400,7 +401,7 @@ void hero::updatekeyboard(float delta)
 									Bullet->addComponent(bulletbody);
 									Bullet->setTag(3);
 									Bullet->setPosition(set_x, set_y);
-									this->addChild(Bullet);
+									this->getCurBattleRoom()->addChild(Bullet);
 									Vec2 target = nearMonster->getPosition() - curPos;
 									//实现发射速度不同，可改
 									auto moveby = MoveBy::create(0.7f, target * 2);
@@ -413,7 +414,7 @@ void hero::updatekeyboard(float delta)
 								this->getCurWeapon()->getSprite()->runAction(this->getCurWeapon()->wea_Frame_animation());
 								for (monster* curMonster : this->getCurBattleRoom()->getVecMonster())
 								{
-									if (!curMonster->isdead())
+									if (!curMonster->isdead() && _canAttack)
 									{
 										Vec2 enemyPos = curMonster->getPosition();
 										if (enemyPos.distance(curPos) < this->getCurWeapon()->getattackRange()
@@ -426,7 +427,7 @@ void hero::updatekeyboard(float delta)
 							}
 							if (this->getWeaponType() == 2)//冲锋枪
 							{
-								if (distance < this->getCurWeapon()->getattackRange() && (rand() % 12 == 0)
+								if (distance < this->getCurWeapon()->getattackRange() && (rand() % 10 == 0)
 									&& ((this->_MP) - (this->getCurWeapon()->getMPCost()) >= 0))
 								{
 									_MP -= this->getCurWeapon()->getMPCost();
@@ -442,7 +443,7 @@ void hero::updatekeyboard(float delta)
 									Bullet->addComponent(bulletbody);
 									Bullet->setTag(3);
 									Bullet->setPosition(set_x, set_y);
-									this->addChild(Bullet);
+									this->getCurBattleRoom()->addChild(Bullet);
 									Vec2 target = nearMonster->getPosition() - curPos;
 									//实现发射速度不同，可改
 									auto moveby = MoveBy::create(0.7f, target * 2);
@@ -471,7 +472,7 @@ void hero::updatekeyboard(float delta)
 										Bullet->addComponent(bulletbody);
 										Bullet->setTag(3);
 										Bullet->setPosition(set_x, set_y);
-										this->addChild(Bullet);
+										this->getCurBattleRoom()->addChild(Bullet);
 										if (i == 1)
 										{
 											float y = tan(45 * sita * i);
@@ -544,6 +545,22 @@ void hero::updatekeyboard(float delta)
 
 								}
 							}
+							if (this->getWeaponType() == 4)//近战黄金锤
+							{
+								this->getCurWeapon()->getSprite()->runAction(this->getCurWeapon()->wea_Frame_animation());
+								for (monster* curMonster : this->getCurBattleRoom()->getVecMonster())
+								{
+									if (!curMonster->isdead() && _canAttack)
+									{
+										Vec2 enemyPos = curMonster->getPosition();
+										if (enemyPos.distance(curPos) < this->getCurWeapon()->getattackRange()
+											&& ((this->_MP) - (this->getCurWeapon()->getMPCost()) >= 0))
+											curMonster->getdamage(this->getCurWeapon()->getdamage());
+										if (curMonster->isdead())
+											this->addCoin(rand() % 4);
+									}
+								}
+							}
 							//CCLOG("MP:%d", _MP);
 						}
 					}
@@ -551,12 +568,10 @@ void hero::updatekeyboard(float delta)
 					{
 						boss* nearBoss = nullptr;
 						float distance_1 = 99999;
-						int set_x_b = this->getContentSize().width / 2;
-						int set_y_b = this->getContentSize().height / 2;
+						int set_x = this->getPositionX();
+						int set_y = this->getPositionY();
 						Vec2 curPos = this->getPosition();
-						float distance = 99999;
-						int set_x = this->getContentSize().width / 2;
-						int set_y = this->getContentSize().height / 2;
+						
 
 						for (boss* curBoss : this->getCurBattleRoom()->getVecBoss())
 						{
@@ -579,6 +594,8 @@ void hero::updatekeyboard(float delta)
 								{
 									_MP -= this->getCurWeapon()->getMPCost();
 									auto Bullet = bullet::create();
+									Bullet->bindWeapon(this->getCurWeapon());
+									Bullet->fullcreate();
 									PhysicsBody* bulletbody = PhysicsBody::createBox(Bullet->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
 									bulletbody->setGravityEnable(false);
 									bulletbody->setDynamic(false);
@@ -587,8 +604,8 @@ void hero::updatekeyboard(float delta)
 									bulletbody->setContactTestBitmask(0x0001);
 									Bullet->addComponent(bulletbody);
 									Bullet->setTag(3);
-									Bullet->setPosition(set_x_b, set_y_b);
-									this->addChild(Bullet);
+									Bullet->setPosition(set_x, set_y);
+									this->getCurBattleRoom()->addChild(Bullet);
 									Vec2 target = nearBoss->getPosition() - curPos;
 									//实现发射速度不同，可改
 									auto moveby = MoveBy::create(0.7f, target * 2);
@@ -601,7 +618,7 @@ void hero::updatekeyboard(float delta)
 								this->getCurWeapon()->getSprite()->runAction(this->getCurWeapon()->wea_Frame_animation());
 								for (boss* curBoss : this->getCurBattleRoom()->getVecBoss())
 								{
-									if (!curBoss->isdead())
+									if (!curBoss->isdead() && _canAttack)
 									{
 										Vec2 enemyPos = curBoss->getPosition();
 										if (enemyPos.distance(curPos) < this->getCurWeapon()->getattackRange()
@@ -614,7 +631,7 @@ void hero::updatekeyboard(float delta)
 							}
 							if (this->getWeaponType() == 2)//冲锋枪
 							{
-								if (distance_1 < this->getCurWeapon()->getattackRange() && (rand() % 12 == 0)
+								if (distance_1 < this->getCurWeapon()->getattackRange() && (rand() % 10 == 0)
 									&& ((this->_MP) - (this->getCurWeapon()->getMPCost()) >= 0))
 								{
 									_MP -= this->getCurWeapon()->getMPCost();
@@ -630,7 +647,7 @@ void hero::updatekeyboard(float delta)
 									Bullet->addComponent(bulletbody);
 									Bullet->setTag(3);
 									Bullet->setPosition(set_x, set_y);
-									this->addChild(Bullet);
+									this->getCurBattleRoom()->addChild(Bullet);
 									Vec2 target = nearBoss->getPosition() - curPos;
 									//实现发射速度不同，可改
 									auto moveby = MoveBy::create(0.7f, target * 2);
@@ -659,7 +676,7 @@ void hero::updatekeyboard(float delta)
 										Bullet->addComponent(bulletbody);
 										Bullet->setTag(3);
 										Bullet->setPosition(set_x, set_y);
-										this->addChild(Bullet);
+										this->getCurBattleRoom()->addChild(Bullet);
 										if (i == 1)
 										{
 											float y = tan(45 * sita * i);
@@ -730,6 +747,22 @@ void hero::updatekeyboard(float delta)
 										}
 									}
 
+								}
+							}
+							if (this->getWeaponType() == 4)
+							{
+								this->getCurWeapon()->getSprite()->runAction(this->getCurWeapon()->wea_Frame_animation());
+								for (boss* curBoss : this->getCurBattleRoom()->getVecBoss())
+								{
+									if (!curBoss->isdead() && _canAttack)
+									{
+										Vec2 enemyPos = curBoss->getPosition();
+										if (enemyPos.distance(curPos) < this->getCurWeapon()->getattackRange()
+											&& ((this->_MP) - (this->getCurWeapon()->getMPCost()) >= 0))
+											curBoss->getdamage(this->getCurWeapon()->getdamage());
+										if (curBoss->isdead())
+											this->addCoin(10 + rand() % 10);
+									}
 								}
 							}
 						}
@@ -819,6 +852,7 @@ void hero::pickUpWeapon(weapon* pickedWeapon)
 	{
 		_secondaryWeaponType = _curWeaponType;
 		_curWeaponType = pickedWeapon->getWeaponType();
+		this->_curBattleRoom->getVecWeapon().eraseObject(pickedWeapon);
 		updateWeaponDisplayStatus();
 	}
 	else if (_secondaryWeaponType >= 0)
@@ -866,5 +900,9 @@ void hero::updateWeaponDisplayStatus()
 		_fourthWeapon->getSprite()->setVisible(false);
 	else
 		_fourthWeapon->getSprite()->setVisible(true);
+	if (4 != _curWeaponType)
+		_fifthWeapon->getSprite()->setVisible(false);
+	else
+		_fifthWeapon->getSprite()->setVisible(true);
 
 }

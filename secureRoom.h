@@ -24,9 +24,9 @@ public:
 
 	/*回调函数*/
 	void menuCloseCallbackEnd(cocos2d::Ref* pSender);
-
 	void menuCloseCallbackSet(cocos2d::Ref* pSender);
-
+	void menuCloseCallbackVolumeUp(cocos2d::Ref* pSender);//升高音量
+	void menuCloseCallbackVolumeDown(cocos2d::Ref* pSender);//降低音量
     hero* Hero;
 
 
@@ -35,19 +35,14 @@ private:
 	bool isInDoor();
 	int ischosen = 0;
 private:
+	Sprite* selectTip;
 	Sprite* backGround;
+	int BGM;
+	cocos2d::Menu* MenuUpVolume;
+	cocos2d::Menu* MenuDownVolume;
+	/*音量大小标签*/
+	cocos2d::Label* volumeNumLab;
 
-	//Sprite* portal = nullptr;
-
-	//hero* knight = nullptr;
-
-	//ui::LoadingBar* BloodLoadingBar = ui::LoadingBar::create();
-	//ui::LoadingBar* ArmorLoadingBar = ui::LoadingBar::create();
-	//ui::LoadingBar* MPLoadingBar = ui::LoadingBar::create();
-
-	//Label* HPLabel;
-	//Label* armorLabel;
-	//Label* MPLabel;
 
 	/**/
 	PhysicsWorld* m_world;

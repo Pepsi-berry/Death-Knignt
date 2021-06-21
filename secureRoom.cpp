@@ -47,10 +47,7 @@ void secureRoom::updatekeyboard(float delta)
 
 Scene* secureRoom::createScene() {
 	Scene* scene = Scene::createWithPhysics();
-	//设置Debug模式，你会看到物体的表面被线条包围，主要为了在调试中更容易地观察
-	scene->getPhysicsWorld()->setDebugDrawMask(PhysicsWorld::DEBUGDRAW_ALL);
 	secureRoom* layer = secureRoom::create();
-	//把空间保持我们创建的层中，就是上面所说m_world的作用，方便后面设置空间的参数
 	layer->setPhyWorld(scene->getPhysicsWorld());
 	scene->addChild(layer);
 
@@ -65,11 +62,12 @@ void secureRoom::update(float delta)
 	{
 		if (keyMap[EventKeyboard::KeyCode::KEY_J])
 		{
+			this->removeChild(selectTip);
 			Hero = hero::create();
 			Hero->setHeroType(1);
 			Hero->initmem();
 			Hero->bindscene(this);
-			Hero->setPosition(Point(visibleSize.width / 2, visibleSize.height / 2));
+			Hero->setPosition(Point(visibleSize.width / 2+50, visibleSize.height / 8));
 			PhysicsBody* herobody = PhysicsBody::createBox(Hero->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
 			herobody->setGravityEnable(false);
 			herobody->setDynamic(false);
@@ -84,11 +82,12 @@ void secureRoom::update(float delta)
 		}
 		if (keyMap[EventKeyboard::KeyCode::KEY_K])
 		{
+			this->removeChild(selectTip);
 			Hero = hero::create();
 			Hero->setHeroType(2);
 			Hero->initmem();
 			Hero->bindscene(this);
-			Hero->setPosition(Point(visibleSize.width / 2, visibleSize.height / 2));
+			Hero->setPosition(Point(visibleSize.width / 2+50, visibleSize.height / 8));
 			PhysicsBody* herobody = PhysicsBody::createBox(Hero->getContentSize(), PhysicsMaterial(0.0f, 0.0f, 0.0f));
 			herobody->setGravityEnable(false);
 			herobody->setDynamic(false);
@@ -141,7 +140,7 @@ bool secureRoom::init() {
 		return false;
 	}
 	AudioEngine::stopAll();
-	auto BGM = AudioEngine::play2d("BGM/bgm_room.mp3", false);
+	BGM = AudioEngine::play2d("BGM/bgm_room.mp3", false);
 	//创建地图
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	//获取安全屋大小
@@ -156,16 +155,43 @@ bool secureRoom::init() {
 
 	this->addChild(this->backGround, 0);
 
+	/*背景音乐*/
+
+	auto volumeUpLab = Label::createWithTTF("+", "fonts/arial.ttf", 36);
+	auto volumeDownLab = Label::createWithTTF("-", "fonts/arial.ttf", 36);
+	auto vol = Label::createWithTTF("BGM", "fonts/arial.ttf", 24);
+	auto volumeUpMenu = MenuItemLabel::create(volumeUpLab, CC_CALLBACK_1(secureRoom::menuCloseCallbackVolumeUp, this));
+	auto volumeDownMenu = MenuItemLabel::create(volumeDownLab, CC_CALLBACK_1(secureRoom::menuCloseCallbackVolumeDown, this));
+
+	MenuUpVolume = Menu::create(volumeUpMenu, NULL);
+	MenuDownVolume = Menu::create(volumeDownMenu, NULL);
+
+	MenuUpVolume->setPosition(visibleSize.width + origin.x - 120, visibleSize.height + origin.y - 25);
+	MenuDownVolume->setPosition(visibleSize.width + origin.x - 200, visibleSize.height + origin.y - 25);
+	vol->setPosition(visibleSize.width + origin.x - 160, visibleSize.height + origin.y - 25);
+	this->addChild(MenuUpVolume, 5);
+	this->addChild(MenuDownVolume, 5);
+	this->addChild(vol, 5);
+
 	// 血条的初始化
 	auto statusFrame = Sprite::create("Character/Status.png");
 	statusFrame->setPosition(origin.x + 60, visibleSize.height + origin.y - 30);
 	addChild(statusFrame, 1);
+
+	auto CoinPng = Sprite::create("Props/add_gold.png");
+	auto COINnum = Label::createWithTTF("0", "fonts/arial.ttf", 22);
+
+	COINnum->setPosition(Vec2(origin.x + 200, visibleSize.height + origin.y - 30));
+	CoinPng->setPosition(Vec2(origin.x + 160, visibleSize.height + origin.y - 30));
+
+	this->addChild(COINnum, 10);
+	this->addChild(CoinPng, 10);
 	// 初始化图标
-	auto exitImg = MenuItemImage::create(
-		"exit.png",
-		"exit.png",
+	auto quitImg = MenuItemImage::create(
+		"quit.png",
+		"quit.png",
 		CC_CALLBACK_1(secureRoom::menuCloseCallbackEnd, this));
-	exitImg->setScale(0.4f, 0.4f);
+	quitImg->setScale(0.4f, 0.4f);
 
 	auto setImg = MenuItemImage::create(
 		"information.png",
@@ -173,12 +199,17 @@ bool secureRoom::init() {
 		CC_CALLBACK_1(secureRoom::menuCloseCallbackSet, this));
 	setImg->setScale(0.2f, 0.2f);
 
-	auto exitMenu = Menu::create(exitImg, NULL);
+	auto quitMenu = Menu::create(quitImg, NULL);
 	auto setMenu = Menu::create(setImg, NULL);
-	exitMenu->setPosition(visibleSize.width + origin.x - 28, visibleSize.height + origin.y - 25);
+	quitMenu->setPosition(visibleSize.width + origin.x - 28, visibleSize.height + origin.y - 25);
 	setMenu->setPosition(visibleSize.width + origin.x - 75, visibleSize.height + origin.y - 25);
-	this->addChild(exitMenu, 1);
+	this->addChild(quitMenu, 1);
 	this->addChild(setMenu, 1);
+
+	//英雄选择提示
+	selectTip = Sprite::create("selectTip.png");
+	selectTip->setPosition(visibleSize.width / 2, visibleSize.height / 2);
+	this->addChild(selectTip, 15);
 
 	//英雄初始化
 	this->schedule(CC_SCHEDULE_SELECTOR(secureRoom::updatekeyboard), 0.01f);
@@ -215,4 +246,18 @@ bool secureRoom::isInDoor() {
 	{
 		return 0;
 	}
+}
+/*升高音量*/
+void secureRoom::menuCloseCallbackVolumeUp(Ref* pSender) {
+	auto volume = AudioEngine::getVolume(BGM);
+	/*修改音量*/
+	AudioEngine::setVolume(BGM, volume + 0.05f);
+
+}
+
+/*降低音量*/
+void secureRoom::menuCloseCallbackVolumeDown(Ref* pSender) {
+	auto volume = AudioEngine::getVolume(BGM);
+	/*修改音量*/
+	AudioEngine::setVolume(BGM, volume - 0.05f);
 }
